@@ -1,0 +1,203 @@
+@baseUrl = http://localhost:8080
+@adminToken = paste-admin-access-token-here
+@employeeToken = paste-employee-access-token-here
+@officeId = paste-office-id-here
+@shiftId = paste-shift-id-here
+@employeeId = paste-employee-id-here
+
+### Auth - Admin Login
+POST {{baseUrl}}/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@example.com",
+  "password": "password123"
+}
+
+### Auth - Employee Login
+POST {{baseUrl}}/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "employee001@example.com",
+  "password": "password123"
+}
+
+### Auth - Me
+GET {{baseUrl}}/api/v1/auth/me
+Authorization: Bearer {{adminToken}}
+
+### Employees - List
+GET {{baseUrl}}/api/v1/admin/employees?page=1&limit=10
+Authorization: Bearer {{adminToken}}
+
+### Employees - Create
+POST {{baseUrl}}/api/v1/admin/employees
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "name": "Test Employee API",
+  "email": "test.employee.api@example.com",
+  "password": "password123",
+  "employee_code": "EMPAPI001",
+  "phone": "+6281299000001",
+  "position": "QA Analyst",
+  "department": "Quality Assurance",
+  "office_id": "{{officeId}}",
+  "shift_id": "{{shiftId}}",
+  "is_active": true
+}
+
+### Employees - Detail
+GET {{baseUrl}}/api/v1/admin/employees/{{employeeId}}
+Authorization: Bearer {{adminToken}}
+
+### Employees - Update
+PUT {{baseUrl}}/api/v1/admin/employees/{{employeeId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "name": "Test Employee API Updated",
+  "email": "test.employee.api@example.com",
+  "employee_code": "EMPAPI001",
+  "phone": "+6281299000002",
+  "position": "Senior QA Analyst",
+  "department": "Quality Assurance",
+  "office_id": "{{officeId}}",
+  "shift_id": "{{shiftId}}",
+  "is_active": true
+}
+
+### Employees - Delete
+DELETE {{baseUrl}}/api/v1/admin/employees/{{employeeId}}
+Authorization: Bearer {{adminToken}}
+
+### Offices - List
+GET {{baseUrl}}/api/v1/admin/offices?page=1&limit=10
+Authorization: Bearer {{adminToken}}
+
+### Offices - Create
+POST {{baseUrl}}/api/v1/admin/offices
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "name": "API Test Office",
+  "code": "API-OFFICE",
+  "address": "Jl. Testing No. 1, Jakarta",
+  "latitude": -6.2,
+  "longitude": 106.816666,
+  "allowed_radius_meter": 150,
+  "is_active": true
+}
+
+### Offices - Detail
+GET {{baseUrl}}/api/v1/admin/offices/{{officeId}}
+Authorization: Bearer {{adminToken}}
+
+### Offices - Update
+PUT {{baseUrl}}/api/v1/admin/offices/{{officeId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "name": "API Test Office Updated",
+  "code": "API-OFFICE",
+  "address": "Jl. Testing No. 2, Jakarta",
+  "latitude": -6.2001,
+  "longitude": 106.8167,
+  "allowed_radius_meter": 175,
+  "is_active": true
+}
+
+### Offices - Delete
+DELETE {{baseUrl}}/api/v1/admin/offices/{{officeId}}
+Authorization: Bearer {{adminToken}}
+
+### Shifts - List
+GET {{baseUrl}}/api/v1/admin/shifts?page=1&limit=10
+Authorization: Bearer {{adminToken}}
+
+### Shifts - Create
+POST {{baseUrl}}/api/v1/admin/shifts
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "name": "API Shift",
+  "code": "API-SHIFT",
+  "start_time": "08:30",
+  "end_time": "17:30",
+  "check_in_start": "07:30",
+  "check_in_end": "09:30",
+  "check_out_start": "16:30",
+  "check_out_end": "18:30",
+  "late_tolerance_minutes": 15,
+  "break_duration_minutes": 60,
+  "is_active": true
+}
+
+### Shifts - Detail
+GET {{baseUrl}}/api/v1/admin/shifts/{{shiftId}}
+Authorization: Bearer {{adminToken}}
+
+### Shifts - Update
+PUT {{baseUrl}}/api/v1/admin/shifts/{{shiftId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "name": "API Shift Updated",
+  "code": "API-SHIFT",
+  "start_time": "09:00",
+  "end_time": "18:00",
+  "check_in_start": "08:00",
+  "check_in_end": "10:00",
+  "check_out_start": "17:00",
+  "check_out_end": "19:00",
+  "late_tolerance_minutes": 20,
+  "break_duration_minutes": 60,
+  "is_active": true
+}
+
+### Shifts - Delete
+DELETE {{baseUrl}}/api/v1/admin/shifts/{{shiftId}}
+Authorization: Bearer {{adminToken}}
+
+### Attendance - Check In
+POST {{baseUrl}}/api/v1/attendance/check-in
+Authorization: Bearer {{employeeToken}}
+Content-Type: application/json
+
+{
+  "latitude": -6.224728,
+  "longitude": 106.809922,
+  "accuracy": 12,
+  "device_id": "api-test-device",
+  "notes": "API test check-in"
+}
+
+### Attendance - Check Out
+POST {{baseUrl}}/api/v1/attendance/check-out
+Authorization: Bearer {{employeeToken}}
+Content-Type: application/json
+
+{
+  "latitude": -6.224728,
+  "longitude": 106.809922,
+  "accuracy": 12
+}
+
+### Attendance - Today
+GET {{baseUrl}}/api/v1/attendance/today
+Authorization: Bearer {{employeeToken}}
+
+### Attendance - History
+GET {{baseUrl}}/api/v1/attendance/history?page=1&limit=10
+Authorization: Bearer {{employeeToken}}
+
+### Reports - Attendance
+GET {{baseUrl}}/api/v1/admin/attendance/report?page=1&limit=10
+Authorization: Bearer {{adminToken}}
