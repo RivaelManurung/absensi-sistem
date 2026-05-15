@@ -2,7 +2,15 @@
 
 import React, { useState, useEffect } from 'react';
 import { useQRScanner } from '@/features/attendance/hooks/use-qr-scanner';
-import { QRScanner } from '@/features/attendance/components/qr-scanner';
+import dynamic from 'next/dynamic';
+const QRScanner = dynamic(() => import('@/features/attendance/components/qr-scanner').then(mod => mod.QRScanner), { 
+  ssr: false,
+  loading: () => (
+    <div className="aspect-square max-w-md mx-auto bg-muted animate-pulse rounded-2xl flex items-center justify-center">
+      <p className="text-muted-foreground">Initializing Camera...</p>
+    </div>
+  )
+});
 import { AttendanceResult } from '@/features/attendance/components/attendance-result';
 import { AttendanceHistory } from '@/features/attendance/components/attendance-history';
 import { attendanceService } from '@/features/attendance/services/attendance.service';

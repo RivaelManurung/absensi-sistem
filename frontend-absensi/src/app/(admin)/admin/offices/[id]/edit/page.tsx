@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { ArrowLeft, Building2, Edit3, Loader2, MapPin } from "lucide-react";
+import { ArrowLeft, Building2, Loader2, MapPin } from "lucide-react";
+import { motion } from "framer-motion";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -19,10 +20,14 @@ export default function EditOfficePage() {
   if (isFetching) {
     return (
       <div className="flex min-h-[70vh] items-center justify-center">
-        <div className="flex flex-col items-center gap-4 text-muted-foreground">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="flex flex-col items-center gap-4 text-muted-foreground"
+        >
           <Loader2 className="h-10 w-10 animate-spin text-primary" />
           <p className="animate-pulse text-sm font-medium">Loading office form...</p>
-        </div>
+        </motion.div>
       </div>
     );
   }
@@ -30,25 +35,30 @@ export default function EditOfficePage() {
   if (!office) {
     return (
       <div className="flex min-h-[70vh] items-center justify-center px-6">
-        <Card className="w-full max-w-md rounded-2xl border-dashed">
-          <CardHeader className="items-center text-center">
-            <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
-              <Building2 className="h-6 w-6 text-destructive" />
-            </div>
-            <CardTitle>Office Not Found</CardTitle>
-            <CardDescription>
-              Data kantor tidak ditemukan atau gagal dimuat.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button variant="outline" className="w-full" asChild>
-              <Link href="/admin/offices">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Offices
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <Card className="w-full max-w-md rounded-2xl border-dashed">
+            <CardHeader className="items-center text-center">
+              <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
+                <Building2 className="h-6 w-6 text-destructive" />
+              </div>
+              <CardTitle>Office Not Found</CardTitle>
+              <CardDescription>
+                Data kantor tidak ditemukan atau gagal dimuat.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button variant="outline" className="w-full" asChild>
+                <Link href="/admin/offices">
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Back to Offices
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
     );
   }
@@ -56,7 +66,11 @@ export default function EditOfficePage() {
   return (
     <div className="w-full space-y-8 px-6 py-8">
       {/* Premium Header */}
-      <div className="flex flex-col gap-6 rounded-3xl border bg-card p-8 shadow-sm md:flex-row md:items-center md:justify-between lg:p-10">
+      <motion.div 
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex flex-col gap-6 rounded-3xl border bg-card p-8 shadow-sm md:flex-row md:items-center md:justify-between lg:p-10"
+      >
         <div className="flex flex-col gap-6 md:flex-row md:items-center">
           <div className="relative">
             <div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-primary/20 to-primary/5 text-primary shadow-inner">
@@ -91,9 +105,14 @@ export default function EditOfficePage() {
             </Link>
           </Button>
         </div>
-      </div>
+      </motion.div>
 
-      <div className="grid gap-8">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="grid gap-8"
+      >
         <Card className="overflow-hidden rounded-3xl border-none shadow-md ring-1 ring-border">
           <CardHeader className="bg-muted/30 px-8 py-6">
             <CardTitle className="text-xl">Office Configuration Form</CardTitle>
@@ -112,7 +131,7 @@ export default function EditOfficePage() {
             </div>
           </CardContent>
         </Card>
-      </div>
+      </motion.div>
     </div>
   );
 }

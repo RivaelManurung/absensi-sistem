@@ -113,3 +113,14 @@ func (h *Handler) UpdateProfile(c *gin.Context) {
 
 	response.Success(c, http.StatusOK, "Profile updated successfully", res)
 }
+
+func (h *Handler) GetMyOffice(c *gin.Context) {
+	userID, _ := c.Get("user_id")
+	res, err := h.svc.GetByUserID(userID.(string))
+	if err != nil {
+		response.Error(c, http.StatusNotFound, "Profile not found", err.Error())
+		return
+	}
+
+	response.Success(c, http.StatusOK, "Success", res.Office)
+}

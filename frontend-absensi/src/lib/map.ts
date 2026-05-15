@@ -70,6 +70,7 @@ export const MAP_MARKER_STYLES = `
     color: #f8fafc !important;
     border-color: #334155 !important;
   }
+`;
 
 /**
  * Calculate distance between two coordinates in meters using Haversine formula
@@ -88,5 +89,3 @@ export function calculateDistance(lat1: number, lon1: number, lat2: number, lon2
 
   return R * c;
 }
-
-`;

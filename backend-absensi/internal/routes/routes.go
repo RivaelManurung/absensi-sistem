@@ -88,7 +88,7 @@ func SetupRoutes(r *gin.Engine, db *gorm.DB, cfg *config.Config) {
 			{
 				appGroup.GET("/me", empHandler.GetMe)
 				appGroup.PUT("/profile", empHandler.UpdateProfile)
-				appGroup.GET("/office", offHandler.GetMyOffice)
+				appGroup.GET("/office", empHandler.GetMyOffice)
 				appGroup.GET("/me/qr", rbac.Middleware(rbacSvc, rbac.PermissionEmployeesQRView), qrHandler.GetMyQR)
 				appGroup.POST("/attendance/qr/check-in", rbac.Middleware(rbacSvc, rbac.PermissionAttendanceSelfCheckIn), qrAttHandler.QRCheckIn)
 				appGroup.POST("/attendance/qr/check-out", rbac.Middleware(rbacSvc, rbac.PermissionAttendanceSelfCheckOut), qrAttHandler.QRCheckOut)
