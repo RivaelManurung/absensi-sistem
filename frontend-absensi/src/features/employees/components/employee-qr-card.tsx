@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { qrService } from '@/features/attendance/qr.service';
 import { LucideQrCode, LucideRefreshCcw, LucideDownload, LucideLoader2 } from 'lucide-react';
 import { QRResponse } from '@/types/qr';
-import { toast } from 'sonner';
+import { toastHelper } from '@/lib/toast';
 
 interface EmployeeQRCardProps {
   employeeId: string;
@@ -23,9 +23,9 @@ export function EmployeeQRCard({ employeeId, employeeName }: EmployeeQRCardProps
     try {
       const data = await qrService.regenerateEmployeeQR(employeeId);
       setQrData(data);
-      toast.success('QR Code regenerated successfully');
+      toastHelper.success('QR Regenerated', 'Your identity QR code has been refreshed.');
     } catch (err) {
-      toast.error('Failed to regenerate QR Code');
+      toastHelper.error('Regeneration failed', 'Could not refresh your QR code. Please try again.');
     } finally {
       setIsRegenerating(false);
       setIsLoading(false);

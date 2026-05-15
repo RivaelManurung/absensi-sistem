@@ -85,3 +85,31 @@ func (h *Handler) Delete(c *gin.Context) {
 
 	response.Success(c, http.StatusOK, "Employee deleted successfully", nil)
 }
+
+func (h *Handler) GetMe(c *gin.Context) {
+	userID, _ := c.Get("user_id")
+	res, err := h.svc.GetByUserID(userID.(string))
+	if err != nil {
+		response.Error(c, http.StatusNotFound, "Profile not found", err.Error())
+		return
+	}
+
+	response.Success(c, http.StatusOK, "Success", res)
+}
+
+func (h *Handler) UpdateProfile(c *gin.Context) {
+	userID, _ := c.Get("user_id")
+	var req ProfileUpdateRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.Error(c, http.StatusUnprocessableEntity, "Validation error", err.Error())
+		return
+	}
+
+	res, err := h.svc.UpdateProfile(userID.(string), req)
+	if err != nil {
+		response.Error(c, http.StatusInternalServerError, "Failed to update profile", err.Error())
+		return
+	}
+
+	response.Success(c, http.StatusOK, "Profile updated successfully", res)
+}

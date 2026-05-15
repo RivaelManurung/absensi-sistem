@@ -74,7 +74,7 @@ func (h *Handler) GetMyQR(c *gin.Context) {
 
 // Admin/HR: Generate Office QR Session
 func (h *Handler) GenerateOfficeQRSession(c *gin.Context) {
-	officeIDStr := c.Param("id")
+	officeIDStr := c.Param("officeId")
 	officeID, err := uuid.Parse(officeIDStr)
 	if err != nil {
 		response.Error(c, http.StatusBadRequest, "invalid office ID", nil)

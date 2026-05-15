@@ -29,7 +29,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useEmployees } from "@/features/employees/hooks/use-employees";
 import { useDeleteEmployee } from "@/features/employees/hooks/use-delete-employee";
-import { EmployeeDeleteDialog } from "@/features/employees/components/employee-delete-dialog";
+import { DeleteDialog } from "@/components/shared/delete-dialog";
+import { toastHelper } from "@/lib/toast";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -45,8 +46,14 @@ export default function EmployeesPage() {
 
   const handleDelete = async () => {
     if (deleteId) {
-      await deleteMutation.mutateAsync(deleteId);
-      setDeleteId(null);
+      try {
+        await deleteMutation.mutateAsync(deleteId);
+        toastHelper.success("Employee deleted", "The employee record has been removed successfully.");
+        setDeleteId(null);
+      } catch (error: any) {
+        // Error toast is also handled in the hook, but we can add more context here if needed
+        toastHelper.error("Delete failed", error.response?.data?.message || "Could not delete the employee.");
+      }
     }
   };
 
@@ -137,7 +144,7 @@ export default function EmployeesPage() {
                     <TableRow key={employee.id}>
                       <TableCell>
                         <div className="flex flex-col">
-                          <span className="font-medium">{employee.name}</span>
+                          <span className="font-medium">{employee.full_name}</span>
                           <div className="flex items-center text-xs text-muted-foreground mt-0.5">
                             <Mail className="mr-1 h-3 w-3" />
                             {employee.email}
@@ -145,7 +152,7 @@ export default function EmployeesPage() {
                         </div>
                       </TableCell>
                       <TableCell>{employee.position}</TableCell>
-                      <TableCell className="capitalize">{employee.role}</TableCell>
+                      <TableCell className="capitalize">{employee.user?.role || "employee"}</TableCell>
                       <TableCell>
                         <Badge 
                           variant={employee.status === "Active" ? "outline" : "secondary"}
@@ -206,12 +213,13 @@ export default function EmployeesPage() {
         )}
       </Card>
 
-      <EmployeeDeleteDialog 
-        employeeName={employeeToDelete?.name || ""}
-        isOpen={!!deleteId}
+      <DeleteDialog 
+        open={!!deleteId}
         onOpenChange={(open) => !open && setDeleteId(null)}
         onConfirm={handleDelete}
         isLoading={deleteMutation.isPending}
+        title="Delete Employee"
+        description={`Are you sure you want to delete ${employeeToDelete?.full_name}? This action cannot be undone.`}
       />
     </div>
   );

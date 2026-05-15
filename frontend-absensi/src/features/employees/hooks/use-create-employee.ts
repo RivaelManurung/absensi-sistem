@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { employeeService } from "../services/employee.service";
-import { toast } from "sonner";
+import { toastHelper } from "@/lib/toast";
 import { useRouter } from "next/navigation";
 
 export function useCreateEmployee() {
@@ -12,11 +12,11 @@ export function useCreateEmployee() {
     mutationFn: employeeService.create,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["employees"] });
-      toast.success("Employee created successfully");
+      toastHelper.success("Employee created", "A new employee record has been added successfully.");
       router.push("/admin/employees");
     },
     onError: (error: AxiosError<{ message?: string }>) => {
-      toast.error(error.response?.data?.message || "Failed to create employee");
+      toastHelper.error("Create failed", error.response?.data?.message || "Failed to create the employee.");
     },
   });
 }

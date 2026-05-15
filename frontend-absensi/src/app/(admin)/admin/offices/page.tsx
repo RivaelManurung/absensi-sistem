@@ -28,7 +28,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useOffices } from "@/features/offices/hooks/use-offices";
 import { useDeleteOffice } from "@/features/offices/hooks/use-delete-office";
-import { OfficeDeleteDialog } from "@/features/offices/components/office-delete-dialog";
+import { DeleteDialog } from "@/components/shared/delete-dialog";
+import { toastHelper } from "@/lib/toast";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -42,8 +43,13 @@ export default function OfficesPage() {
 
   const handleDelete = async () => {
     if (deleteId) {
-      await deleteMutation.mutateAsync(deleteId);
-      setDeleteId(null);
+      try {
+        await deleteMutation.mutateAsync(deleteId);
+        toastHelper.success("Office deleted", "The office location has been removed successfully.");
+        setDeleteId(null);
+      } catch (err: any) {
+        toastHelper.error("Delete failed", err.response?.data?.message || "Could not delete the office.");
+      }
     }
   };
 
@@ -189,12 +195,13 @@ export default function OfficesPage() {
         </CardContent>
       </Card>
 
-      <OfficeDeleteDialog 
-        officeName={officeToDelete?.name || ""}
-        isOpen={!!deleteId}
+      <DeleteDialog 
+        open={!!deleteId}
         onOpenChange={(open) => !open && setDeleteId(null)}
         onConfirm={handleDelete}
         isLoading={deleteMutation.isPending}
+        title="Delete Office"
+        description={`Are you sure you want to delete ${officeToDelete?.name}? This action cannot be undone.`}
       />
     </div>
   );

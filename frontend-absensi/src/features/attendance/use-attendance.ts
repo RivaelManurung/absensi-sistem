@@ -4,7 +4,7 @@ import {
   attendanceService,
   LocationPayload,
 } from "./services/attendance.service";
-import { toast } from "sonner";
+import { toastHelper } from "@/lib/toast";
 
 export const useAttendanceToday = () => {
   return useQuery({
@@ -28,10 +28,10 @@ export const useCheckIn = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["attendance"] });
       queryClient.invalidateQueries({ queryKey: ["attendance-history"] });
-      toast.success("Checked in successfully");
+      toastHelper.success("Check-in successful", "Your attendance has been recorded.");
     },
     onError: (error: AxiosError<{ message?: string }>) => {
-      toast.error(error.response?.data?.message || "Failed to check in");
+      toastHelper.error("Check-in failed", error.response?.data?.message || "Failed to record your check-in.");
     },
   });
 };
@@ -43,10 +43,10 @@ export const useCheckOut = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["attendance"] });
       queryClient.invalidateQueries({ queryKey: ["attendance-history"] });
-      toast.success("Checked out successfully");
+      toastHelper.success("Check-out successful", "Thank you for your hard work today!");
     },
     onError: (error: AxiosError<{ message?: string }>) => {
-      toast.error(error.response?.data?.message || "Failed to check out");
+      toastHelper.error("Check-out failed", error.response?.data?.message || "Failed to record your check-out.");
     },
   });
 };

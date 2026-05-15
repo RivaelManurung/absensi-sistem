@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { employeeService } from "../services/employee.service";
-import { toast } from "sonner";
+import { toastHelper } from "@/lib/toast";
 
 export function useDeleteEmployee() {
   const queryClient = useQueryClient();
@@ -10,10 +10,10 @@ export function useDeleteEmployee() {
     mutationFn: employeeService.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["employees"] });
-      toast.success("Employee deleted successfully");
+      toastHelper.success("Employee deleted", "The employee record has been removed successfully.");
     },
     onError: (error: AxiosError<{ message?: string }>) => {
-      toast.error(error.response?.data?.message || "Failed to delete employee");
+      toastHelper.error("Delete failed", error.response?.data?.message || "Failed to delete the employee.");
     },
   });
 }

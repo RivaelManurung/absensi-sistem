@@ -66,7 +66,7 @@ export default function AdminScanPage() {
             <CardDescription>{result.message}</CardDescription>
           </CardHeader>
           <CardContent>
-            {result.success && result.data && (
+            {result.success && !!result.data && (
               <div className="mb-6 p-4 bg-muted rounded-lg text-left text-sm space-y-1">
                 <p><strong>Employee:</strong> {(result.data as { employee: { full_name: string } }).employee.full_name}</p>
                 <p><strong>Time:</strong> {new Date().toLocaleTimeString()}</p>

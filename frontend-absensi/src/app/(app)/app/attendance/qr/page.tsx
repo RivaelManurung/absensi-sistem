@@ -6,7 +6,7 @@ import { AxiosError } from 'axios';
 import { QRScanner } from '@/components/qr/qr-scanner';
 import { qrService } from '@/features/attendance/qr.service';
 import { useAuth } from '@/features/auth/use-auth';
-import { toast } from 'sonner';
+import { toastHelper } from '@/lib/toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { LucideCheckCircle, LucideAlertTriangle, LucideLoader2 } from 'lucide-react';
@@ -37,7 +37,7 @@ export default function QRAttendancePage() {
           device_id: 'browser_id', // Should be a real persistent ID
         });
         setResult({ success: true, message: 'Check-in successful' });
-        toast.success('Check-in successful');
+        toastHelper.success('Check-in successful', 'Your entry has been recorded.');
       } catch (err: unknown) {
         // If check-in fails, try check-out (backend will validate which session it is)
         try {
@@ -49,16 +49,16 @@ export default function QRAttendancePage() {
             device_id: 'browser_id',
           });
           setResult({ success: true, message: 'Check-out successful' });
-          toast.success('Check-out successful');
+          toastHelper.success('Check-out successful', 'Your exit has been recorded.');
         } catch (checkoutErr: unknown) {
           const axiosError = checkoutErr as AxiosError<{ message?: string }>;
           const errMsg = axiosError.response?.data?.message || 'Failed to process QR code';
           setResult({ success: false, message: errMsg });
-          toast.error(errMsg);
+          toastHelper.error('Scan failed', errMsg);
         }
       }
     } catch (err: unknown) {
-      toast.error('Failed to get location: ' + (err as Error).message);
+      toastHelper.error('Location error', (err as Error).message);
       setResult({ success: false, message: 'Location access required' });
     } finally {
       setIsProcessing(false);

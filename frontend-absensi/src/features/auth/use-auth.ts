@@ -3,7 +3,7 @@ import { AxiosError } from 'axios';
 import { authService } from './auth.service';
 import { getCookie, setCookie, deleteCookie } from 'cookies-next';
 import { useRouter } from 'next/navigation';
-import { toast } from 'sonner';
+import { toastHelper } from '@/lib/toast';
 
 const AUTH_COOKIE_NAME = 'access_token';
 const REFRESH_COOKIE_NAME = 'refresh_token';
@@ -54,12 +54,12 @@ export const useAuth = () => {
       setCookie(AUTH_COOKIE_NAME, res.data.access_token, { maxAge: 60 * 60 * 12 }); // 12 hours
       setCookie(REFRESH_COOKIE_NAME, res.data.refresh_token, { maxAge: 60 * 60 * 24 * 7 });
       setCookie(ROLE_COOKIE_NAME, res.data.user.role, { maxAge: 60 * 60 * 12 });
-      toast.success('Login successful');
+      toastHelper.success('Login successful', `Welcome back, ${res.data.user.name}!`);
       queryClient.setQueryData(['auth', 'me'], { data: res.data.user });
       router.replace(redirectTo);
     },
     onError: (error: AxiosError<{ message?: string }>) => {
-      toast.error(error.response?.data?.message || 'Login failed');
+      toastHelper.error('Login failed', error.response?.data?.message || 'Invalid email or password.');
     },
   });
 
@@ -76,7 +76,7 @@ export const useAuth = () => {
     deleteCookie(ROLE_COOKIE_NAME);
     queryClient.clear();
     router.replace('/login');
-    toast.success('Logged out successfully');
+    toastHelper.success('Logged out', 'You have been signed out successfully.');
   };
 
   return {

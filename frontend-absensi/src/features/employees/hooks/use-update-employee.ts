@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { employeeService } from "../services/employee.service";
 import { UpdateEmployeePayload } from "../types/employee.type";
-import { toast } from "sonner";
+import { toastHelper } from "@/lib/toast";
 import { useRouter } from "next/navigation";
 
 export function useUpdateEmployee() {
@@ -15,11 +15,11 @@ export function useUpdateEmployee() {
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: ["employees"] });
       queryClient.invalidateQueries({ queryKey: ["employees", id] });
-      toast.success("Employee updated successfully");
+      toastHelper.success("Employee updated", "Employee information has been updated successfully.");
       router.push("/admin/employees");
     },
     onError: (error: AxiosError<{ message?: string }>) => {
-      toast.error(error.response?.data?.message || "Failed to update employee");
+      toastHelper.error("Update failed", error.response?.data?.message || "Failed to update the employee.");
     },
   });
 }

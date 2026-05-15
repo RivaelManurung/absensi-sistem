@@ -71,7 +71,20 @@ func SetupRoutes(r *gin.Engine, db *gorm.DB, cfg *config.Config) {
 
 			// QR Attendance
 			qrAttHandler := qr.NewAttendanceQRHandler(qrSvc, attSvc)
-			qr.SetupRoutes(protected, qrHandler, qrAttHandler, rbacSvc)
+			
+			// Employee App QR Routes (Self)
+			appGroup := protected.Group("/app")
+			{
+				empRepo := employee.NewRepository(db)
+				empSvc := employee.NewService(empRepo)
+				empHandler := employee.NewHandler(empSvc)
+
+				appGroup.GET("/me", empHandler.GetMe)
+				appGroup.PUT("/profile", empHandler.UpdateProfile)
+				appGroup.GET("/me/qr", rbac.Middleware(rbacSvc, rbac.PermissionEmployeesQRView), qrHandler.GetMyQR)
+				appGroup.POST("/attendance/qr/check-in", rbac.Middleware(rbacSvc, rbac.PermissionAttendanceSelfCheckIn), qrAttHandler.QRCheckIn)
+				appGroup.POST("/attendance/qr/check-out", rbac.Middleware(rbacSvc, rbac.PermissionAttendanceSelfCheckOut), qrAttHandler.QRCheckOut)
+			}
 
 			protected.POST("/attendance/check-in", middleware.RateLimitMiddleware(cfg.AttendanceRateLimitPerMinute, time.Minute), attHandler.CheckIn)
 			protected.POST("/attendance/check-out", middleware.RateLimitMiddleware(cfg.AttendanceRateLimitPerMinute, time.Minute), attHandler.CheckOut)
@@ -84,6 +97,12 @@ func SetupRoutes(r *gin.Engine, db *gorm.DB, cfg *config.Config) {
 			admin.Use(middleware.RoleMiddleware("admin", "hr"))
 			{
 				admin.GET("/attendance/report", attHandler.GetReport)
+
+				// QR Management (Admin/HR)
+				admin.GET("/employees/:id/qr", rbac.Middleware(rbacSvc, rbac.PermissionEmployeesQRView), qrHandler.GetEmployeeQR)
+				admin.POST("/employees/:id/qr/regenerate", rbac.Middleware(rbacSvc, rbac.PermissionEmployeesQRRegen), qrHandler.RegenerateEmployeeQR)
+				admin.POST("/offices/:officeId/qr-sessions", rbac.Middleware(rbacSvc, rbac.PermissionQROfficeGenerate), qrHandler.GenerateOfficeQRSession)
+				admin.POST("/attendance/qr/scan-employee", rbac.Middleware(rbacSvc, rbac.PermissionAttendanceAdminScan), qrAttHandler.ScanEmployeeQR)
 
 				// Employee Management
 				empRepo := employee.NewRepository(db)
@@ -103,9 +122,9 @@ func SetupRoutes(r *gin.Engine, db *gorm.DB, cfg *config.Config) {
 
 				admin.GET("/offices", offHandler.GetAll)
 				admin.POST("/offices", offHandler.Create)
-				admin.GET("/offices/:id", offHandler.GetByID)
-				admin.PUT("/offices/:id", offHandler.Update)
-				admin.DELETE("/offices/:id", offHandler.Delete)
+				admin.GET("/offices/:officeId", offHandler.GetByID)
+				admin.PUT("/offices/:officeId", offHandler.Update)
+				admin.DELETE("/offices/:officeId", offHandler.Delete)
 
 				// Shift Management
 				shfRepo := shift.NewRepository(db)

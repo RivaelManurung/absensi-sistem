@@ -28,7 +28,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useShifts } from "@/features/shifts/hooks/use-shifts";
 import { useDeleteShift } from "@/features/shifts/hooks/use-delete-shift";
-import { ShiftDeleteDialog } from "@/features/shifts/components/shift-delete-dialog";
+import { DeleteDialog } from "@/components/shared/delete-dialog";
+import { toastHelper } from "@/lib/toast";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -42,8 +43,13 @@ export default function ShiftsPage() {
 
   const handleDelete = async () => {
     if (deleteId) {
-      await deleteMutation.mutateAsync(deleteId);
-      setDeleteId(null);
+      try {
+        await deleteMutation.mutateAsync(deleteId);
+        toastHelper.success("Shift deleted", "The shift schedule has been removed successfully.");
+        setDeleteId(null);
+      } catch (err: any) {
+        toastHelper.error("Delete failed", err.response?.data?.message || "Could not delete the shift.");
+      }
     }
   };
 
@@ -192,12 +198,13 @@ export default function ShiftsPage() {
         </CardContent>
       </Card>
 
-      <ShiftDeleteDialog 
-        shiftName={shiftToDelete?.name || ""}
-        isOpen={!!deleteId}
+      <DeleteDialog 
+        open={!!deleteId}
         onOpenChange={(open) => !open && setDeleteId(null)}
         onConfirm={handleDelete}
         isLoading={deleteMutation.isPending}
+        title="Delete Shift"
+        description={`Are you sure you want to delete ${shiftToDelete?.name}? This action cannot be undone.`}
       />
     </div>
   );

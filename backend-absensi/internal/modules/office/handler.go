@@ -31,7 +31,7 @@ func (h *Handler) GetAll(c *gin.Context) {
 }
 
 func (h *Handler) GetByID(c *gin.Context) {
-	id := c.Param("id")
+	id := c.Param("officeId")
 	res, err := h.svc.GetByID(id)
 	if err != nil {
 		response.Error(c, http.StatusNotFound, "Office not found", err.Error())
@@ -58,7 +58,7 @@ func (h *Handler) Create(c *gin.Context) {
 }
 
 func (h *Handler) Update(c *gin.Context) {
-	id := c.Param("id")
+	id := c.Param("officeId")
 	var req OfficeRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		response.Error(c, http.StatusUnprocessableEntity, "Validation error", err.Error())
@@ -75,7 +75,7 @@ func (h *Handler) Update(c *gin.Context) {
 }
 
 func (h *Handler) Delete(c *gin.Context) {
-	id := c.Param("id")
+	id := c.Param("officeId")
 	if err := h.svc.Delete(id); err != nil {
 		response.Error(c, http.StatusInternalServerError, "Failed to delete office", err.Error())
 		return

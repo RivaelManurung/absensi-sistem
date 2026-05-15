@@ -1,25 +1,24 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { officeService } from "../services/office.service";
-import { toast } from "sonner";
+import { toastHelper } from "@/lib/toast";
 import { useRouter } from "next/navigation";
 import { AxiosError } from "axios";
-import { UpdateOfficePayload } from "../types/office.type";
 
 export function useUpdateOffice() {
   const queryClient = useQueryClient();
   const router = useRouter();
 
   return useMutation({
-    mutationFn: ({ id, payload }: { id: string; payload: UpdateOfficePayload }) => 
+    mutationFn: ({ id, payload }: { id: string; payload: any }) =>
       officeService.update(id, payload),
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: ["offices"] });
       queryClient.invalidateQueries({ queryKey: ["offices", id] });
-      toast.success("Office updated successfully");
+      toastHelper.success("Office updated", "The office information has been updated successfully.");
       router.push("/admin/offices");
     },
     onError: (error: AxiosError<{ message?: string }>) => {
-      toast.error(error.response?.data?.message || "Failed to update office");
+      toastHelper.error("Update failed", error.response?.data?.message || "Failed to update the office.");
     },
   });
 }

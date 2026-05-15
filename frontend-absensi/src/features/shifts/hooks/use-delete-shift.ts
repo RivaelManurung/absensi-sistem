@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { shiftService } from "../services/shift.service";
-import { toast } from "sonner";
+import { toastHelper } from "@/lib/toast";
 import { AxiosError } from "axios";
 
 export function useDeleteShift() {
@@ -10,10 +10,10 @@ export function useDeleteShift() {
     mutationFn: shiftService.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["shifts"] });
-      toast.success("Shift deleted successfully");
+      toastHelper.success("Shift deleted", "The shift schedule has been removed successfully.");
     },
     onError: (error: AxiosError<{ message?: string }>) => {
-      toast.error(error.response?.data?.message || "Failed to delete shift");
+      toastHelper.error("Delete failed", error.response?.data?.message || "Failed to delete the shift.");
     },
   });
 }

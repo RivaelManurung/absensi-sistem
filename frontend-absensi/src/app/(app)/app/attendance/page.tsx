@@ -90,7 +90,7 @@ export default function AttendanceScannerPage() {
         message: errMsg,
       });
       toast.error(errMsg);
-      throw err; // Re-throw to trigger hook error handling if needed
+      throw err;
     }
   };
 

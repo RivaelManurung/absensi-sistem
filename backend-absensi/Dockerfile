@@ -12,6 +12,8 @@ RUN go build -o seeder ./cmd/seed/main.go
 
 FROM alpine:latest
 
+RUN apk add --no-cache tzdata
+
 WORKDIR /app
 
 COPY --from=builder /app/main .

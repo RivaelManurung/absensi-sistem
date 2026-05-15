@@ -35,9 +35,17 @@ const (
 type User struct {
 	Base
 	Name         string     `gorm:"size:255" json:"name"`
+	FirstName    string     `gorm:"size:100" json:"first_name"`
+	LastName     string     `gorm:"size:100" json:"last_name"`
+	Username     string     `gorm:"size:100;uniqueIndex" json:"username"`
 	Email        string     `gorm:"size:255;uniqueIndex" json:"email"`
 	PasswordHash string     `gorm:"size:255" json:"-"`
 	Role         UserRole   `gorm:"type:varchar(20)" json:"role"`
+	AvatarURL    string     `gorm:"size:255" json:"avatar_url"`
+	Gender       string     `gorm:"size:20" json:"gender"`
+	BirthDate    *time.Time `json:"birth_date"`
+	Phone        string     `gorm:"size:20" json:"phone"`
+	Address      string     `gorm:"type:text" json:"address"`
 	IsActive     bool       `gorm:"default:true" json:"is_active"`
 	LastLoginAt  *time.Time `json:"last_login_at"`
 }
@@ -70,19 +78,24 @@ type Shift struct {
 
 type Employee struct {
 	Base
-	UserID       uuid.UUID `gorm:"type:uuid;uniqueIndex" json:"user_id"`
-	User         User      `gorm:"foreignKey:UserID" json:"user,omitempty"`
-	EmployeeCode string    `gorm:"size:50;uniqueIndex" json:"employee_code"`
-	FullName     string    `gorm:"size:255" json:"full_name"`
-	Phone        string    `gorm:"size:20" json:"phone"`
-	Position     string    `gorm:"size:100" json:"position"`
-	Department   string    `gorm:"size:100" json:"department"`
-	OfficeID     uuid.UUID `gorm:"type:uuid" json:"office_id"`
-	Office       Office    `gorm:"foreignKey:OfficeID" json:"office,omitempty"`
-	ShiftID      uuid.UUID `gorm:"type:uuid" json:"shift_id"`
-	Shift        Shift     `gorm:"foreignKey:ShiftID" json:"shift,omitempty"`
-	DeviceID     string    `gorm:"size:255" json:"device_id"`
-	IsActive     bool      `gorm:"default:true" json:"is_active"`
+	UserID           uuid.UUID  `gorm:"type:uuid;uniqueIndex" json:"user_id"`
+	User             User       `gorm:"foreignKey:UserID" json:"user,omitempty"`
+	EmployeeCode     string     `gorm:"size:50;uniqueIndex" json:"employee_code"`
+	FullName         string     `gorm:"size:255" json:"full_name"`
+	Phone            string     `gorm:"size:20" json:"phone"`
+	Position         string     `gorm:"size:100" json:"position"`
+	Department       string     `gorm:"size:100" json:"department"`
+	OfficeID         uuid.UUID  `gorm:"type:uuid" json:"office_id"`
+	Office           Office     `gorm:"foreignKey:OfficeID" json:"office,omitempty"`
+	ShiftID          uuid.UUID  `gorm:"type:uuid" json:"shift_id"`
+	Shift            Shift      `gorm:"foreignKey:ShiftID" json:"shift,omitempty"`
+	JoinDate         *time.Time `json:"join_date"`
+	EmploymentStatus string     `gorm:"size:50" json:"employment_status"` // Full-time, Part-time, Contract, Probation
+	EmergencyContact string     `gorm:"size:255" json:"emergency_contact"`
+	EmergencyPhone   string     `gorm:"size:20" json:"emergency_phone"`
+	Notes            string     `gorm:"type:text" json:"notes"`
+	DeviceID         string     `gorm:"size:255" json:"device_id"`
+	IsActive         bool       `gorm:"default:true" json:"is_active"`
 }
 
 type AttendanceStatus string

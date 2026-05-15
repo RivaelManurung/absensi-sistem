@@ -3,14 +3,22 @@ import {
   CreateEmployeePayload,
   Employee,
   EmployeeRole,
+  ProfileUpdatePayload,
   UpdateEmployeePayload,
 } from "../types/employee.type";
 
 type BackendUser = {
   id: string;
   name: string;
+  first_name?: string;
+  last_name?: string;
+  username?: string;
   email: string;
   role: EmployeeRole;
+  avatar_url?: string;
+  gender?: string;
+  birth_date?: string;
+  address?: string;
   is_active: boolean;
 };
 
@@ -22,6 +30,8 @@ type BackendOffice = {
 type BackendShift = {
   id: string;
   name: string;
+  start_time: string;
+  end_time: string;
 };
 
 type BackendEmployee = {
@@ -35,6 +45,11 @@ type BackendEmployee = {
   office?: BackendOffice;
   shift_id: string;
   shift?: BackendShift;
+  join_date?: string;
+  employment_status?: string;
+  emergency_contact?: string;
+  emergency_phone?: string;
+  notes?: string;
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -68,39 +83,16 @@ export type EmployeePage = {
 
 function mapEmployee(employee: BackendEmployee): Employee {
   return {
+    ...employee,
     id: employee.id,
-    employee_id: employee.employee_code,
-    name: employee.full_name,
     email: employee.user?.email ?? "",
-    phone: employee.phone,
-    office_id: employee.office_id,
-    office_name: employee.office?.name,
-    shift_id: employee.shift_id,
-    shift_name: employee.shift?.name,
-    position: employee.position,
-    department: employee.department,
-    role: employee.user?.role ?? "employee",
     status: employee.is_active ? "Active" : "Inactive",
-    created_at: employee.created_at,
-    updated_at: employee.updated_at,
-  };
-}
-
-function toBackendPayload(payload: CreateEmployeePayload | UpdateEmployeePayload) {
-  return {
-    full_name: payload.name,
-    name: payload.name,
-    employee_code: payload.employee_id,
-    email: payload.email,
-    phone: payload.phone,
-    office_id: payload.office_id,
-    shift_id: payload.shift_id,
-    position: payload.position,
-    department: payload.department,
-    role: payload.role,
-    password: payload.password,
-    is_active: payload.status ? payload.status === "Active" : undefined,
-  };
+    user: employee.user ? {
+        ...employee.user,
+        gender: employee.user.gender as any,
+    } : undefined,
+    employment_status: employee.employment_status as any,
+  } as Employee;
 }
 
 export const employeeService = {
@@ -126,7 +118,7 @@ export const employeeService = {
   create: async (payload: CreateEmployeePayload) => {
     const response = await apiClient.post<BackendSingle<BackendEmployee>>(
       "/admin/employees",
-      toBackendPayload(payload)
+      payload
     );
     return mapEmployee(response.data.data);
   },
@@ -134,7 +126,7 @@ export const employeeService = {
   update: async (id: string, payload: UpdateEmployeePayload) => {
     const response = await apiClient.put<BackendSingle<BackendEmployee>>(
       `/admin/employees/${id}`,
-      toBackendPayload(payload)
+      payload
     );
     return mapEmployee(response.data.data);
   },
@@ -142,5 +134,19 @@ export const employeeService = {
   delete: async (id: string) => {
     const response = await apiClient.delete(`/admin/employees/${id}`);
     return response.data;
+  },
+
+  // Self Profile Management
+  getMe: async () => {
+    const response = await apiClient.get<BackendSingle<BackendEmployee>>("/app/me");
+    return mapEmployee(response.data.data);
+  },
+
+  updateProfile: async (payload: ProfileUpdatePayload) => {
+    const response = await apiClient.put<BackendSingle<BackendEmployee>>(
+      "/app/profile",
+      payload
+    );
+    return mapEmployee(response.data.data);
   },
 };

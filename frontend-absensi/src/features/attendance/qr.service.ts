@@ -27,8 +27,15 @@ export const qrService = {
 
   // QR Management
   generateOfficeQR: async (officeId: string, payload: GenerateOfficeQRRequest): Promise<QRResponse> => {
-    const { data } = await apiClient.post<ApiResponse<QRResponse>>(`/admin/offices/${officeId}/qr-sessions`, payload);
-    return data.data;
+    try {
+      const { data } = await apiClient.post<ApiResponse<QRResponse>>(`/admin/offices/${officeId}/qr-sessions`, payload);
+      return data.data;
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        throw new Error("QR Session endpoint not found. Check backend route configuration.");
+      }
+      throw error;
+    }
   },
 
   getEmployeeQR: async (employeeId: string): Promise<QRResponse> => {

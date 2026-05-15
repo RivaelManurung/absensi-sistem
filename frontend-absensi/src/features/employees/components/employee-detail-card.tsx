@@ -16,8 +16,8 @@ export function EmployeeDetailCard({ employee }: EmployeeDetailCardProps) {
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="space-y-1">
-            <CardTitle className="text-2xl">{employee.name}</CardTitle>
-            <p className="text-sm text-muted-foreground">{employee.employee_id}</p>
+            <CardTitle className="text-2xl">{employee.full_name}</CardTitle>
+            <p className="text-sm text-muted-foreground">{employee.employee_code}</p>
           </div>
           <Badge variant={employee.status === "Active" ? "outline" : "destructive"}>
             {employee.status}
@@ -44,7 +44,7 @@ export function EmployeeDetailCard({ employee }: EmployeeDetailCardProps) {
             <Building className="size-4 text-muted-foreground" />
             <div className="space-y-0.5">
               <p className="text-[10px] font-bold uppercase text-muted-foreground">Office</p>
-              <p className="text-sm">{employee.office_name || "N/A"}</p>
+              <p className="text-sm">{employee.office?.name || "N/A"}</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -58,7 +58,7 @@ export function EmployeeDetailCard({ employee }: EmployeeDetailCardProps) {
             <Shield className="size-4 text-muted-foreground" />
             <div className="space-y-0.5">
               <p className="text-[10px] font-bold uppercase text-muted-foreground">Role</p>
-              <Badge variant="secondary" className="capitalize">{employee.role}</Badge>
+              <Badge variant="secondary" className="capitalize">{employee.user?.role || "employee"}</Badge>
             </div>
           </div>
           <div className="flex items-center gap-3">

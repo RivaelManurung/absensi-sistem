@@ -13,6 +13,7 @@ type Repository interface {
 	Delete(id string) error
 	FindByEmail(email string) (*models.Employee, error)
 	FindByCode(code string) (*models.Employee, error)
+	FindByUserID(userID string) (*models.Employee, error)
 }
 
 type repository struct {
@@ -112,4 +113,13 @@ func (r *repository) FindByCode(code string) (*models.Employee, error) {
 	var employee models.Employee
 	err := r.db.Where("employee_code = ?", code).First(&employee).Error
 	return &employee, err
+}
+
+func (r *repository) FindByUserID(userID string) (*models.Employee, error) {
+	var employee models.Employee
+	err := r.db.Preload("User").Preload("Office").Preload("Shift").First(&employee, "user_id = ?", userID).Error
+	if err != nil {
+		return nil, err
+	}
+	return &employee, nil
 }
