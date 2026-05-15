@@ -5,9 +5,10 @@ export interface Office {
   name: string;
   code: string;
   address: string;
-  latitude: number;
-  longitude: number;
+  latitude: number | null;
+  longitude: number | null;
   radius_meter: number;
+  geofence_enabled: boolean;
   status: OfficeStatus;
   total_employees?: number;
   created_at: string;
@@ -18,9 +19,10 @@ export interface CreateOfficePayload {
   name: string;
   code: string;
   address: string;
-  latitude: number;
-  longitude: number;
+  latitude: number | null;
+  longitude: number | null;
   radius_meter: number;
+  geofence_enabled: boolean;
   status: OfficeStatus;
 }
 

@@ -7,13 +7,14 @@ import (
 )
 
 type OfficeRequest struct {
-	Name               string  `json:"name" binding:"required"`
-	Code               string  `json:"code" binding:"required"`
-	Address            string  `json:"address" binding:"required"`
-	Latitude           float64 `json:"latitude" binding:"required,min=-90,max=90"`
-	Longitude          float64 `json:"longitude" binding:"required,min=-180,max=180"`
-	AllowedRadiusMeter int     `json:"allowed_radius_meter" binding:"required,min=20,max=1000"`
-	IsActive           *bool   `json:"is_active"`
+	Name               string   `json:"name" binding:"required"`
+	Code               string   `json:"code" binding:"required"`
+	Address            string   `json:"address" binding:"required"`
+	Latitude           *float64 `json:"latitude" binding:"omitempty,min=-90,max=90"`
+	Longitude          *float64 `json:"longitude" binding:"omitempty,min=-180,max=180"`
+	AllowedRadiusMeter int      `json:"allowed_radius_meter" binding:"required,min=10,max=5000"`
+	GeofenceEnabled    bool     `json:"geofence_enabled"`
+	IsActive           *bool    `json:"is_active"`
 }
 
 type Service interface {
@@ -63,6 +64,7 @@ func (s *service) Create(req OfficeRequest) (*models.Office, error) {
 		Latitude:           req.Latitude,
 		Longitude:          req.Longitude,
 		AllowedRadiusMeter: req.AllowedRadiusMeter,
+		GeofenceEnabled:    req.GeofenceEnabled,
 		IsActive:           activeOrDefault(req.IsActive, true),
 	}
 
@@ -84,6 +86,7 @@ func (s *service) Update(id string, req OfficeRequest) (*models.Office, error) {
 	office.Latitude = req.Latitude
 	office.Longitude = req.Longitude
 	office.AllowedRadiusMeter = req.AllowedRadiusMeter
+	office.GeofenceEnabled = req.GeofenceEnabled
 	office.IsActive = activeOrDefault(req.IsActive, office.IsActive)
 
 	if err := s.repo.Update(office); err != nil {

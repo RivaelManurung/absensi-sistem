@@ -125,7 +125,15 @@ func isNightShift(start, end string) bool {
 	return end <= start
 }
 
-func nearbyCoordinate(lat, lon float64, seed int) (float64, float64) {
+func nearbyCoordinate(latPtr, lonPtr *float64, seed int) (float64, float64) {
+	lat := 0.0
+	lon := 0.0
+	if latPtr != nil {
+		lat = *latPtr
+	}
+	if lonPtr != nil {
+		lon = *lonPtr
+	}
 	offsetLat := (float64(seed%9) - 4) * 0.000045
 	offsetLon := (float64(seed%7) - 3) * 0.000045
 	return lat + offsetLat, lon + offsetLon

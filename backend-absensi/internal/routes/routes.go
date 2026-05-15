@@ -63,29 +63,38 @@ func SetupRoutes(r *gin.Engine, db *gorm.DB, cfg *config.Config) {
 		protected := api.Group("/")
 		protected.Use(middleware.AuthMiddleware(cfg))
 		{
-			// Attendance (Employee)
+			// Initialize Repositories and Services
 			attRepo := attendance.NewRepository(db)
 			attSvc := attendance.NewService(attRepo, cfg)
 			repSvc := attendance.NewReportService(attRepo)
 			attHandler := attendance.NewHandler(attSvc, repSvc)
 
-			// QR Attendance
+			empRepo := employee.NewRepository(db)
+			empSvc := employee.NewService(empRepo)
+			empHandler := employee.NewHandler(empSvc)
+
+			offRepo := office.NewRepository(db)
+			offSvc := office.NewService(offRepo)
+			offHandler := office.NewHandler(offSvc)
+
+			shfRepo := shift.NewRepository(db)
+			shfSvc := shift.NewService(shfRepo)
+			shfHandler := shift.NewHandler(shfSvc)
+
 			qrAttHandler := qr.NewAttendanceQRHandler(qrSvc, attSvc)
-			
-			// Employee App QR Routes (Self)
+
+			// Employee App Routes
 			appGroup := protected.Group("/app")
 			{
-				empRepo := employee.NewRepository(db)
-				empSvc := employee.NewService(empRepo)
-				empHandler := employee.NewHandler(empSvc)
-
 				appGroup.GET("/me", empHandler.GetMe)
 				appGroup.PUT("/profile", empHandler.UpdateProfile)
+				appGroup.GET("/office", offHandler.GetMyOffice)
 				appGroup.GET("/me/qr", rbac.Middleware(rbacSvc, rbac.PermissionEmployeesQRView), qrHandler.GetMyQR)
 				appGroup.POST("/attendance/qr/check-in", rbac.Middleware(rbacSvc, rbac.PermissionAttendanceSelfCheckIn), qrAttHandler.QRCheckIn)
 				appGroup.POST("/attendance/qr/check-out", rbac.Middleware(rbacSvc, rbac.PermissionAttendanceSelfCheckOut), qrAttHandler.QRCheckOut)
 			}
 
+			// Generic Attendance Routes
 			protected.POST("/attendance/check-in", middleware.RateLimitMiddleware(cfg.AttendanceRateLimitPerMinute, time.Minute), attHandler.CheckIn)
 			protected.POST("/attendance/check-out", middleware.RateLimitMiddleware(cfg.AttendanceRateLimitPerMinute, time.Minute), attHandler.CheckOut)
 			protected.POST("/attendance/scan", middleware.RateLimitMiddleware(cfg.AttendanceRateLimitPerMinute, time.Minute), qrAttHandler.UnifiedScan)
@@ -105,10 +114,6 @@ func SetupRoutes(r *gin.Engine, db *gorm.DB, cfg *config.Config) {
 				admin.POST("/attendance/qr/scan-employee", rbac.Middleware(rbacSvc, rbac.PermissionAttendanceAdminScan), qrAttHandler.ScanEmployeeQR)
 
 				// Employee Management
-				empRepo := employee.NewRepository(db)
-				empSvc := employee.NewService(empRepo)
-				empHandler := employee.NewHandler(empSvc)
-
 				admin.GET("/employees", empHandler.GetAll)
 				admin.POST("/employees", empHandler.Create)
 				admin.GET("/employees/:id", empHandler.GetByID)
@@ -116,10 +121,6 @@ func SetupRoutes(r *gin.Engine, db *gorm.DB, cfg *config.Config) {
 				admin.DELETE("/employees/:id", empHandler.Delete)
 
 				// Office Management
-				offRepo := office.NewRepository(db)
-				offSvc := office.NewService(offRepo)
-				offHandler := office.NewHandler(offSvc)
-
 				admin.GET("/offices", offHandler.GetAll)
 				admin.POST("/offices", offHandler.Create)
 				admin.GET("/offices/:officeId", offHandler.GetByID)
@@ -127,10 +128,6 @@ func SetupRoutes(r *gin.Engine, db *gorm.DB, cfg *config.Config) {
 				admin.DELETE("/offices/:officeId", offHandler.Delete)
 
 				// Shift Management
-				shfRepo := shift.NewRepository(db)
-				shfSvc := shift.NewService(shfRepo)
-				shfHandler := shift.NewHandler(shfSvc)
-
 				admin.GET("/shifts", shfHandler.GetAll)
 				admin.POST("/shifts", shfHandler.Create)
 				admin.GET("/shifts/:id", shfHandler.GetByID)

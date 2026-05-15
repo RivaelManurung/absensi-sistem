@@ -29,6 +29,13 @@ import { useState } from "react";
 import { DeleteDialog } from "@/components/shared/delete-dialog";
 import { useDeleteOffice } from "@/features/offices/hooks/use-delete-office";
 import { toastHelper } from "@/lib/toast";
+import dynamic from "next/dynamic";
+import { GeofenceMapSkeleton } from "@/components/maps/geofence-map-skeleton";
+
+const GeofenceMap = dynamic(() => import("@/components/maps/geofence-map"), {
+  ssr: false,
+  loading: () => <GeofenceMapSkeleton />,
+});
 
 export default function OfficeDetailPage() {
   const { id } = useParams() as { id: string };
@@ -122,6 +129,10 @@ export default function OfficeDetailPage() {
                 <Navigation className="mr-1.5 h-3 w-3 text-primary" />
                 {office.radius_meter}m Radius
               </Badge>
+              <Badge variant="outline" className={`bg-muted/50 font-medium ${office.geofence_enabled ? 'text-blue-600 border-blue-200' : 'text-slate-500 border-slate-200'}`}>
+                <ShieldCheck className="mr-1.5 h-3 w-3" />
+                Geofence: {office.geofence_enabled ? "Enabled" : "Disabled"}
+              </Badge>
               <Badge variant="outline" className="bg-muted/50 font-medium">
                 <Users className="mr-1.5 h-3 w-3 text-primary" />
                 {office.total_employees || 0} Employees
@@ -185,7 +196,9 @@ export default function OfficeDetailPage() {
                   <div className="min-w-0">
                     <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Coordinates</p>
                     <p className="mt-1 break-words text-sm font-semibold font-mono">
-                      {office.latitude.toFixed(6)}, {office.longitude.toFixed(6)}
+                      {office.latitude !== null && office.longitude !== null 
+                        ? `${office.latitude.toFixed(6)}, ${office.longitude.toFixed(6)}` 
+                        : "Not configured"}
                     </p>
                   </div>
                 </div>
@@ -226,19 +239,15 @@ export default function OfficeDetailPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="px-8 pb-8">
-              <div className="aspect-video w-full rounded-2xl bg-muted/50 flex flex-col items-center justify-center border-2 border-dashed border-muted relative overflow-hidden">
-                 {/* Placeholder for real map */}
-                 <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent" />
-                 <div className="z-10 text-center p-6">
-                    <div className="h-16 w-16 bg-background rounded-full flex items-center justify-center shadow-lg mx-auto mb-4 border ring-8 ring-primary/5">
-                      <MapPin className="h-8 w-8 text-primary" />
-                    </div>
-                    <p className="font-bold text-lg mb-1">Office Geofence Active</p>
-                    <p className="text-sm text-muted-foreground max-w-sm mx-auto">
-                      Karyawan hanya dapat melakukan check-in jika berada dalam radius {office.radius_meter} meter dari titik koordinat ini.
-                    </p>
-                 </div>
-              </div>
+              <GeofenceMap 
+                lat={office.latitude}
+                lng={office.longitude}
+                radius={office.radius_meter}
+                officeName={office.name}
+                officeAddress={office.address}
+                status={office.status as "Active" | "Inactive"}
+                enabled={office.geofence_enabled}
+              />
             </CardContent>
           </Card>
         </div>

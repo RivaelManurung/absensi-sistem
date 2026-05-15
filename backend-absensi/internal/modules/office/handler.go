@@ -83,3 +83,19 @@ func (h *Handler) Delete(c *gin.Context) {
 
 	response.Success(c, http.StatusOK, "Office deleted successfully", nil)
 }
+
+func (h *Handler) GetMyOffice(c *gin.Context) {
+	officeID, exists := c.Get("office_id")
+	if !exists || officeID == "" {
+		response.Error(c, http.StatusBadRequest, "Office ID not found in session", "")
+		return
+	}
+
+	res, err := h.svc.GetByID(officeID.(string))
+	if err != nil {
+		response.Error(c, http.StatusNotFound, "Office not found", err.Error())
+		return
+	}
+
+	response.Success(c, http.StatusOK, "Success", res)
+}

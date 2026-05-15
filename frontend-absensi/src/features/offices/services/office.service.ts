@@ -7,9 +7,10 @@ type BackendOffice = {
   name: string;
   code: string;
   address: string;
-  latitude: number;
-  longitude: number;
+  latitude: number | null;
+  longitude: number | null;
   allowed_radius_meter: number;
+  geofence_enabled: boolean;
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -50,6 +51,7 @@ function mapOffice(office: BackendOffice): Office {
     latitude: office.latitude,
     longitude: office.longitude,
     radius_meter: office.allowed_radius_meter,
+    geofence_enabled: office.geofence_enabled,
     status: office.is_active ? "Active" : "Inactive",
     created_at: office.created_at,
     updated_at: office.updated_at,
@@ -64,6 +66,7 @@ function toBackendPayload(payload: Partial<CreateOfficePayload>) {
     latitude: payload.latitude,
     longitude: payload.longitude,
     allowed_radius_meter: payload.radius_meter,
+    geofence_enabled: payload.geofence_enabled,
     is_active: payload.status ? payload.status === "Active" : undefined,
   };
 }
@@ -109,7 +112,13 @@ export const officeService = {
   },
 
   delete: async (id: string) => {
-    const response = await apiClient.delete(`/admin/offices/${id}`);
-    return response.data;
+    await apiClient.delete(`/admin/offices/${id}`);
+  },
+
+  getMyOffice: async () => {
+    const response = await apiClient.get<BackendSingle<BackendOffice>>(
+      "/app/office"
+    );
+    return mapOffice(response.data.data);
   },
 };

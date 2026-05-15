@@ -63,11 +63,22 @@ func (s *service) CheckIn(userID string, req CheckInRequest, ip, ua string) (*mo
 		return nil, fmt.Errorf("location accuracy too low (%.2f > %.2f)", req.Accuracy, s.cfg.MaxLocationAccuracy)
 	}
 
-	// Calculate Distance
-	dist := geolocation.DistanceMeters(req.Latitude, req.Longitude, emp.Office.Latitude, emp.Office.Longitude)
-	if dist > float64(emp.Office.AllowedRadiusMeter) {
-		s.logAttendance(emp, userID, "check_in", req.Latitude, req.Longitude, req.Accuracy, dist, "failed", "Outside radius", req.DeviceID, ip, ua)
-		return nil, fmt.Errorf("you are outside the allowed radius (%.2f meters)", dist)
+	// Calculate Distance if geofence is enabled
+	var dist float64
+	if emp.Office.GeofenceEnabled {
+		if emp.Office.Latitude == nil || emp.Office.Longitude == nil {
+			return nil, errors.New("office location not configured for geofencing")
+		}
+		dist = geolocation.DistanceMeters(req.Latitude, req.Longitude, *emp.Office.Latitude, *emp.Office.Longitude)
+		if dist > float64(emp.Office.AllowedRadiusMeter) {
+			s.logAttendance(emp, userID, "check_in", req.Latitude, req.Longitude, req.Accuracy, dist, "failed", "Outside radius", req.DeviceID, ip, ua)
+			return nil, fmt.Errorf("you are outside the allowed radius (%.2f meters)", dist)
+		}
+	} else {
+		// Even if geofence is disabled, we still calculate distance for logging if coordinates are available
+		if emp.Office.Latitude != nil && emp.Office.Longitude != nil {
+			dist = geolocation.DistanceMeters(req.Latitude, req.Longitude, *emp.Office.Latitude, *emp.Office.Longitude)
+		}
 	}
 
 	// Validate Shift Timing
@@ -147,10 +158,21 @@ func (s *service) CheckOut(userID string, req CheckOutRequest, ip, ua string) (*
 		return nil, fmt.Errorf("location accuracy too low (%.2f > %.2f)", req.Accuracy, s.cfg.MaxLocationAccuracy)
 	}
 
-	dist := geolocation.DistanceMeters(req.Latitude, req.Longitude, emp.Office.Latitude, emp.Office.Longitude)
-	if dist > float64(emp.Office.AllowedRadiusMeter) {
-		s.logAttendance(emp, userID, "check_out", req.Latitude, req.Longitude, req.Accuracy, dist, "failed", "Outside radius", "", ip, ua)
-		return nil, fmt.Errorf("you are outside the allowed radius (%.2f meters)", dist)
+	var dist float64
+	if emp.Office.GeofenceEnabled {
+		if emp.Office.Latitude == nil || emp.Office.Longitude == nil {
+			return nil, errors.New("office location not configured for geofencing")
+		}
+		dist = geolocation.DistanceMeters(req.Latitude, req.Longitude, *emp.Office.Latitude, *emp.Office.Longitude)
+		if dist > float64(emp.Office.AllowedRadiusMeter) {
+			s.logAttendance(emp, userID, "check_out", req.Latitude, req.Longitude, req.Accuracy, dist, "failed", "Outside radius", "", ip, ua)
+			return nil, fmt.Errorf("you are outside the allowed radius (%.2f meters)", dist)
+		}
+	} else {
+		// Even if geofence is disabled, we still calculate distance for logging if coordinates are available
+		if emp.Office.Latitude != nil && emp.Office.Longitude != nil {
+			dist = geolocation.DistanceMeters(req.Latitude, req.Longitude, *emp.Office.Latitude, *emp.Office.Longitude)
+		}
 	}
 
 	// Validate Shift Check-out Window

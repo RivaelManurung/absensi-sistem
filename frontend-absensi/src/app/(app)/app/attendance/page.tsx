@@ -15,6 +15,10 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
 import { AttendanceRecord } from '@/features/attendance/types/attendance.type';
+import { useMyOffice } from '@/features/offices/hooks/use-my-office';
+import { calculateDistance } from '@/lib/map';
+import { LucideMapPin, LucideCheckCircle2, LucideXCircle } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
 
 export default function AttendanceScannerPage() {
   const queryClient = useQueryClient();
@@ -29,6 +33,26 @@ export default function AttendanceScannerPage() {
   } | null>(null);
 
   const { data: today, isLoading: isLoadingToday } = useAttendanceToday();
+  const { data: myOffice, isLoading: isLoadingOffice } = useMyOffice();
+  const [distance, setDistance] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (location && myOffice?.latitude && myOffice?.longitude) {
+      const d = calculateDistance(
+        location.lat,
+        location.lng,
+        myOffice.latitude,
+        myOffice.longitude
+      );
+      setDistance(d);
+    } else {
+      setDistance(null);
+    }
+  }, [location, myOffice]);
+
+  const isInsideGeofence = distance !== null && myOffice?.radius_meter !== undefined 
+    ? distance <= myOffice.radius_meter 
+    : null;
 
   // Get location on mount
   useEffect(() => {
@@ -146,6 +170,65 @@ export default function AttendanceScannerPage() {
                 Please wait while we capture your precise location...
               </AlertDescription>
             </Alert>
+          )}
+
+          {/* Geofence Status Card */}
+          {location && myOffice && (
+            <div className={`p-4 rounded-xl border transition-all duration-300 ${
+              isInsideGeofence 
+                ? 'bg-green-500/5 border-green-200' 
+                : 'bg-red-500/5 border-red-200'
+            }`}>
+              <div className="flex items-start justify-between gap-4">
+                <div className="space-y-1">
+                  <h3 className="font-semibold flex items-center gap-2">
+                    <LucideMapPin className="h-4 w-4" />
+                    Office: {myOffice.name}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    {distance !== null 
+                      ? `Distance: ${distance.toFixed(1)}m` 
+                      : 'Calculating distance...'}
+                  </p>
+                </div>
+                {isInsideGeofence !== null && (
+                  <Badge 
+                    variant={isInsideGeofence ? "default" : "destructive"}
+                    className={isInsideGeofence ? "bg-green-600" : ""}
+                  >
+                    {isInsideGeofence ? (
+                      <span className="flex items-center gap-1">
+                        <LucideCheckCircle2 className="h-3 w-3" /> Inside
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1">
+                        <LucideXCircle className="h-3 w-3" /> Outside
+                      </span>
+                    )}
+                  </Badge>
+                )}
+              </div>
+              
+              {distance !== null && myOffice.radius_meter && (
+                <div className="mt-4 space-y-1.5">
+                  <div className="flex justify-between text-xs font-medium">
+                    <span>Proximity</span>
+                    <span className={isInsideGeofence ? "text-green-600" : "text-red-600"}>
+                      {Math.min(100, Math.max(0, (1 - distance / (myOffice.radius_meter * 2)) * 100)).toFixed(0)}%
+                    </span>
+                  </div>
+                  <Progress 
+                    value={Math.min(100, Math.max(0, (1 - distance / (myOffice.radius_meter * 2)) * 100))} 
+                    className={`h-1.5 ${isInsideGeofence ? "[&>div]:bg-green-600" : "[&>div]:bg-red-600"}`}
+                  />
+                  {!isInsideGeofence && myOffice.geofence_enabled && (
+                    <p className="text-[10px] text-red-500 font-medium animate-pulse mt-1">
+                      * You must be within {myOffice.radius_meter}m of the office to record attendance.
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
           )}
 
           {/* Scanner Wrapper */}

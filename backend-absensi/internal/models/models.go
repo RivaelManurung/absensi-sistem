@@ -52,13 +52,14 @@ type User struct {
 
 type Office struct {
 	Base
-	Name               string  `gorm:"size:255" json:"name"`
-	Code               string  `gorm:"size:20;uniqueIndex" json:"code"`
-	Address            string  `gorm:"type:text" json:"address"`
-	Latitude           float64 `gorm:"type:decimal(10,8)" json:"latitude"`
-	Longitude          float64 `gorm:"type:decimal(11,8)" json:"longitude"`
-	AllowedRadiusMeter int     `gorm:"default:100" json:"allowed_radius_meter"`
-	IsActive           bool    `gorm:"default:true" json:"is_active"`
+	Name               string   `gorm:"size:255" json:"name"`
+	Code               string   `gorm:"size:20;uniqueIndex" json:"code"`
+	Address            string   `gorm:"type:text" json:"address"`
+	Latitude           *float64 `gorm:"type:decimal(10,8)" json:"latitude"`
+	Longitude          *float64 `gorm:"type:decimal(11,8)" json:"longitude"`
+	AllowedRadiusMeter int      `gorm:"default:100" json:"allowed_radius_meter"`
+	GeofenceEnabled    bool     `gorm:"default:true" json:"geofence_enabled"`
+	IsActive           bool     `gorm:"default:true" json:"is_active"`
 }
 
 type Shift struct {
