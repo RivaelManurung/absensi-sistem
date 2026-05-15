@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { officeService } from "../services/office.service";
 import { toast } from "sonner";
+import { AxiosError } from "axios";
 
 export function useDeleteOffice() {
   const queryClient = useQueryClient();
@@ -11,7 +12,7 @@ export function useDeleteOffice() {
       queryClient.invalidateQueries({ queryKey: ["offices"] });
       toast.success("Office deleted successfully");
     },
-    onError: (error: any) => {
+    onError: (error: AxiosError<{ message?: string }>) => {
       toast.error(error.response?.data?.message || "Failed to delete office");
     },
   });

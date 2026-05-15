@@ -1,17 +1,22 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { attendanceService, LocationPayload } from './attendance.service';
-import { toast } from 'sonner';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { AxiosError } from "axios";
+import {
+  attendanceService,
+  LocationPayload,
+} from "./services/attendance.service";
+import { toast } from "sonner";
 
 export const useAttendanceToday = () => {
   return useQuery({
-    queryKey: ['attendance', 'today'],
+    queryKey: ["attendance", "today"],
     queryFn: () => attendanceService.getToday(),
+    retry: false,
   });
 };
 
 export const useAttendanceHistory = () => {
   return useQuery({
-    queryKey: ['attendance', 'history'],
+    queryKey: ["attendance", "history"],
     queryFn: () => attendanceService.getHistory(),
   });
 };
@@ -21,11 +26,12 @@ export const useCheckIn = () => {
   return useMutation({
     mutationFn: (payload: LocationPayload) => attendanceService.checkIn(payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['attendance'] });
-      toast.success('Checked in successfully!');
+      queryClient.invalidateQueries({ queryKey: ["attendance"] });
+      queryClient.invalidateQueries({ queryKey: ["attendance-history"] });
+      toast.success("Checked in successfully");
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to check in');
+    onError: (error: AxiosError<{ message?: string }>) => {
+      toast.error(error.response?.data?.message || "Failed to check in");
     },
   });
 };
@@ -35,11 +41,12 @@ export const useCheckOut = () => {
   return useMutation({
     mutationFn: (payload: LocationPayload) => attendanceService.checkOut(payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['attendance'] });
-      toast.success('Checked out successfully!');
+      queryClient.invalidateQueries({ queryKey: ["attendance"] });
+      queryClient.invalidateQueries({ queryKey: ["attendance-history"] });
+      toast.success("Checked out successfully");
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to check out');
+    onError: (error: AxiosError<{ message?: string }>) => {
+      toast.error(error.response?.data?.message || "Failed to check out");
     },
   });
 };

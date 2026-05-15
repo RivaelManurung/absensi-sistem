@@ -10,9 +10,9 @@ import {
   FileText,
   LayoutDashboard,
   LogOut,
+  QrCode,
   Settings,
   User,
-  UserCheck,
   Users,
 } from "lucide-react"
 
@@ -32,66 +32,84 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
+import { useAuth } from "@/features/auth/use-auth"
 
 const navMain = [
   {
     title: "Dashboard",
-    url: "/dashboard",
+    url: "/admin/dashboard",
     icon: LayoutDashboard,
   },
   {
-    title: "My Attendance",
-    url: "/attendance",
-    icon: UserCheck,
-  },
-  {
     title: "Employees",
-    url: "/employees",
+    url: "/admin/employees",
     icon: Users,
   },
   {
     title: "Offices",
-    url: "/offices",
+    url: "/admin/offices",
     icon: Building2,
   },
   {
     title: "Shifts",
-    url: "/shifts",
+    url: "/admin/shifts",
     icon: Calendar,
   },
   {
     title: "Reports",
-    url: "/reports",
+    url: "/admin/reports",
     icon: FileText,
+  },
+]
+
+const navApp = [
+  {
+    title: "QR Attendance",
+    url: "/app/attendance",
+    icon: QrCode,
+  },
+  {
+    title: "Attendance History",
+    url: "/app/attendance/history",
+    icon: Clock3,
   },
 ]
 
 const navAccount = [
   {
     title: "Profile",
-    url: "/profile",
+    url: "/app/profile",
     icon: User,
   },
   {
     title: "Settings",
-    url: "/settings",
+    url: "/admin/settings",
     icon: Settings,
   },
 ]
 
 function isRouteActive(pathname: string, url: string) {
-  return url === "/dashboard" ? pathname === "/dashboard" : pathname.startsWith(url)
+  return url === "/admin/dashboard" ? pathname === "/admin/dashboard" : pathname.startsWith(url)
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname()
+  const { user, logout } = useAuth()
+  const displayName = user?.name || user?.email || "Account"
+  const displayEmail = user?.email || "Signed in"
+  const initials = displayName
+    .split(" ")
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase()
 
   return (
     <Sidebar collapsible="icon" className="border-r" {...props}>
       <SidebarHeader className="border-b">
         <div className="flex h-14 items-center px-3">
           <Link
-            href="/dashboard"
+            href="/admin/dashboard"
             className="group flex min-w-0 items-center gap-3 rounded-md px-2 py-1.5 transition-colors hover:bg-accent"
           >
             <div className="flex size-8 shrink-0 items-center justify-center rounded-lg border bg-background shadow-sm">
@@ -154,6 +172,38 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
         <SidebarGroup>
           <SidebarGroupLabel className="px-2 text-xs font-medium text-muted-foreground">
+            Employee App
+          </SidebarGroupLabel>
+
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {navApp.map((item) => {
+                const active = isRouteActive(pathname, item.url)
+
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton
+                      asChild
+                      tooltip={item.title}
+                      isActive={active}
+                      className="h-9 rounded-md px-2 text-sm font-medium data-[active=true]:bg-accent data-[active=true]:text-accent-foreground"
+                    >
+                      <Link href={item.url}>
+                        <item.icon className="size-4 text-muted-foreground" />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )
+              })}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <Separator className="my-2" />
+
+        <SidebarGroup>
+          <SidebarGroupLabel className="px-2 text-xs font-medium text-muted-foreground">
             Account
           </SidebarGroupLabel>
 
@@ -186,13 +236,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarFooter className="border-t p-2">
         <div className="mb-2 flex items-center gap-3 rounded-lg border bg-card p-2 shadow-sm">
           <Avatar className="size-8">
-            <AvatarFallback className="text-xs font-medium">AD</AvatarFallback>
+            <AvatarFallback className="text-xs font-medium">{initials}</AvatarFallback>
           </Avatar>
 
           <div className="grid min-w-0 flex-1 text-left leading-tight">
-            <span className="truncate text-sm font-medium">Admin User</span>
+            <span className="truncate text-sm font-medium">{displayName}</span>
             <span className="truncate text-xs text-muted-foreground">
-              admin@absensi.com
+              {displayEmail}
             </span>
           </div>
         </div>
@@ -200,14 +250,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
-              asChild
               tooltip="Sign Out"
               className="h-9 rounded-md px-2 text-sm font-medium text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+              onClick={logout}
             >
-              <Link href="/login">
-                <LogOut className="size-4" />
-                <span>Sign Out</span>
-              </Link>
+              <LogOut className="size-4" />
+              <span>Sign Out</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

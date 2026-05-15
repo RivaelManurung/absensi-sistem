@@ -35,6 +35,12 @@ type BackendSingle<T> = {
   data: T;
 };
 
+export type OfficeQueryParams = {
+  page?: number;
+  limit?: number;
+  search?: string;
+};
+
 function mapOffice(office: BackendOffice): Office {
   return {
     id: office.id,
@@ -77,7 +83,7 @@ function logOfficeError(error: unknown) {
 }
 
 export const officeService = {
-  getAll: async (params?: any) => {
+  getAll: async (params?: OfficeQueryParams) => {
     try {
       const response = await apiClient.get<BackendPage<BackendOffice>>("/admin/offices", { params });
       return response.data.data.items.map(mapOffice);

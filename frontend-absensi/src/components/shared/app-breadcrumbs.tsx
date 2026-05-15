@@ -15,6 +15,10 @@ import React from "react";
 export function AppBreadcrumbs() {
   const pathname = usePathname();
   const paths = pathname.split("/").filter((path) => path !== "");
+  const root = paths[0];
+  const isAdmin = root === "admin";
+  const rootHref = isAdmin ? "/admin/dashboard" : "/app/dashboard";
+  const rootLabel = isAdmin ? "Dashboard" : "App";
 
   if (paths.length === 0) return null;
 
@@ -22,11 +26,11 @@ export function AppBreadcrumbs() {
     <Breadcrumb>
       <BreadcrumbList>
         <BreadcrumbItem>
-          <BreadcrumbLink render={<Link href="/dashboard" />}>Dashboard</BreadcrumbLink>
+          <BreadcrumbLink render={<Link href={rootHref} />}>{rootLabel}</BreadcrumbLink>
         </BreadcrumbItem>
         {paths.map((path, index) => {
-          // Skip "dashboard" if it's the first part since we already added it
-          if (path === "dashboard" && index === 0) return null;
+          if ((path === "admin" || path === "app") && index === 0) return null;
+          if (path === "dashboard" && index === 1) return null;
 
           const href = `/${paths.slice(0, index + 1).join("/")}`;
           const isLast = index === paths.length - 1;

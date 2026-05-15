@@ -44,6 +44,10 @@ func NewService(repo Repository, cfg *config.Config) Service {
 }
 
 func (s *service) CheckIn(userID string, req CheckInRequest, ip, ua string) (*models.Attendance, error) {
+	if err := validateLocation(req.Latitude, req.Longitude, req.Accuracy); err != nil {
+		return nil, err
+	}
+
 	emp, err := s.repo.FindEmployeeByUserID(userID)
 	if err != nil {
 		return nil, errors.New("employee profile not found")
@@ -69,7 +73,7 @@ func (s *service) CheckIn(userID string, req CheckInRequest, ip, ua string) (*mo
 	// Validate Shift Timing
 	now := time.Now()
 	nowTime := now.Format("15:04")
-	if nowTime < emp.Shift.CheckInStart || nowTime > emp.Shift.CheckInEnd {
+	if !isTimeWithinWindow(nowTime, emp.Shift.CheckInStart, emp.Shift.CheckInEnd) {
 		s.logAttendance(emp, userID, "check_in", req.Latitude, req.Longitude, req.Accuracy, dist, "failed", "Outside check-in window", req.DeviceID, ip, ua)
 		return nil, errors.New("outside check-in window for your shift")
 	}
@@ -119,6 +123,10 @@ func (s *service) CheckIn(userID string, req CheckInRequest, ip, ua string) (*mo
 }
 
 func (s *service) CheckOut(userID string, req CheckOutRequest, ip, ua string) (*models.Attendance, error) {
+	if err := validateLocation(req.Latitude, req.Longitude, req.Accuracy); err != nil {
+		return nil, err
+	}
+
 	emp, err := s.repo.FindEmployeeByUserID(userID)
 	if err != nil {
 		return nil, errors.New("employee profile not found")
@@ -148,7 +156,7 @@ func (s *service) CheckOut(userID string, req CheckOutRequest, ip, ua string) (*
 	// Validate Shift Check-out Window
 	now := time.Now()
 	nowTime := now.Format("15:04")
-	if nowTime < emp.Shift.CheckOutStart || nowTime > emp.Shift.CheckOutEnd {
+	if !isTimeWithinWindow(nowTime, emp.Shift.CheckOutStart, emp.Shift.CheckOutEnd) {
 		s.logAttendance(emp, userID, "check_out", req.Latitude, req.Longitude, req.Accuracy, dist, "failed", "Outside check-out window", "", ip, ua)
 		return nil, errors.New("outside check-out window for your shift")
 	}
@@ -218,4 +226,24 @@ func (s *service) logAttendance(emp *models.Employee, userID, action string, lat
 		UserAgent:     ua,
 	}
 	_ = s.repo.CreateLog(log)
+}
+
+func validateLocation(latitude, longitude, accuracy float64) error {
+	if latitude < -90 || latitude > 90 {
+		return errors.New("latitude must be between -90 and 90")
+	}
+	if longitude < -180 || longitude > 180 {
+		return errors.New("longitude must be between -180 and 180")
+	}
+	if accuracy <= 0 {
+		return errors.New("accuracy must be greater than 0")
+	}
+	return nil
+}
+
+func isTimeWithinWindow(current, start, end string) bool {
+	if start <= end {
+		return current >= start && current <= end
+	}
+	return current >= start || current <= end
 }

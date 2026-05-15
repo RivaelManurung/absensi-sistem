@@ -23,4 +23,4 @@ export interface CreateShiftPayload {
   status: ShiftStatus;
 }
 
-export interface UpdateShiftPayload extends Partial<CreateShiftPayload> {}
+export type UpdateShiftPayload = Partial<CreateShiftPayload>;

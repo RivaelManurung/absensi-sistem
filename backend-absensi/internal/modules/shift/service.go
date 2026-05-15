@@ -3,7 +3,9 @@ package shift
 import (
 	"backend-absensi/internal/models"
 	"backend-absensi/internal/pkg/response"
+	"errors"
 	"math"
+	"time"
 )
 
 type ShiftRequest struct {
@@ -60,6 +62,10 @@ func (s *service) GetByID(id string) (*models.Shift, error) {
 }
 
 func (s *service) Create(req ShiftRequest) (*models.Shift, error) {
+	if err := validateShiftRequest(req); err != nil {
+		return nil, err
+	}
+
 	shift := &models.Shift{
 		Name:                 req.Name,
 		Code:                 req.Code,
@@ -81,6 +87,10 @@ func (s *service) Create(req ShiftRequest) (*models.Shift, error) {
 }
 
 func (s *service) Update(id string, req ShiftRequest) (*models.Shift, error) {
+	if err := validateShiftRequest(req); err != nil {
+		return nil, err
+	}
+
 	shift, err := s.repo.FindByID(id)
 	if err != nil {
 		return nil, err
@@ -113,4 +123,30 @@ func activeOrDefault(value *bool, fallback bool) bool {
 		return fallback
 	}
 	return *value
+}
+
+func validateShiftRequest(req ShiftRequest) error {
+	fields := map[string]string{
+		"start_time":      req.StartTime,
+		"end_time":        req.EndTime,
+		"check_in_start":  req.CheckInStart,
+		"check_in_end":    req.CheckInEnd,
+		"check_out_start": req.CheckOutStart,
+		"check_out_end":   req.CheckOutEnd,
+	}
+
+	for field, value := range fields {
+		if _, err := time.Parse("15:04", value); err != nil {
+			return errors.New(field + " must use HH:mm format")
+		}
+	}
+
+	if req.LateToleranceMinutes < 0 {
+		return errors.New("late_tolerance_minutes cannot be negative")
+	}
+	if req.BreakDurationMinutes < 0 {
+		return errors.New("break_duration_minutes cannot be negative")
+	}
+
+	return nil
 }

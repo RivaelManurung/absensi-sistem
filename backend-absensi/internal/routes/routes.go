@@ -7,6 +7,8 @@ import (
 	"backend-absensi/internal/modules/auth"
 	"backend-absensi/internal/modules/employee"
 	"backend-absensi/internal/modules/office"
+	"backend-absensi/internal/modules/qr"
+	"backend-absensi/internal/modules/rbac"
 	"backend-absensi/internal/modules/shift"
 	"strings"
 	"time"
@@ -17,6 +19,16 @@ import (
 )
 
 func SetupRoutes(r *gin.Engine, db *gorm.DB, cfg *config.Config) {
+	r.Use(middleware.RequestIDMiddleware())
+	r.Use(middleware.RequestLoggerMiddleware())
+
+	// RBAC Module
+	rbacSvc := rbac.NewService(db)
+
+	// QR Module
+	qrSvc := qr.NewService(db, cfg.QRSecret)
+	qrHandler := qr.NewHandler(qrSvc)
+
 	// CORS Configuration
 	corsConfig := cors.Config{
 		AllowOrigins:     allowedOrigins(cfg.CORSAllowedOrigins),
@@ -37,12 +49,14 @@ func SetupRoutes(r *gin.Engine, db *gorm.DB, cfg *config.Config) {
 		// Auth Module
 		authRepo := auth.NewRepository(db)
 		authSvc := auth.NewService(authRepo, cfg)
-		authHandler := auth.NewHandler(authSvc)
+		authHandler := auth.NewHandler(authSvc, rbacSvc)
 
 		authGroup := api.Group("/auth")
 		{
-			authGroup.POST("/login", authHandler.Login)
+			authGroup.POST("/login", middleware.RateLimitMiddleware(cfg.LoginRateLimitPerMinute, time.Minute), authHandler.Login)
+			authGroup.POST("/refresh", authHandler.Refresh)
 			authGroup.GET("/me", middleware.AuthMiddleware(cfg), authHandler.Me)
+			authGroup.POST("/logout", middleware.AuthMiddleware(cfg), authHandler.Logout)
 		}
 
 		// Protected Routes
@@ -55,8 +69,13 @@ func SetupRoutes(r *gin.Engine, db *gorm.DB, cfg *config.Config) {
 			repSvc := attendance.NewReportService(attRepo)
 			attHandler := attendance.NewHandler(attSvc, repSvc)
 
-			protected.POST("/attendance/check-in", attHandler.CheckIn)
-			protected.POST("/attendance/check-out", attHandler.CheckOut)
+			// QR Attendance
+			qrAttHandler := qr.NewAttendanceQRHandler(qrSvc, attSvc)
+			qr.SetupRoutes(protected, qrHandler, qrAttHandler, rbacSvc)
+
+			protected.POST("/attendance/check-in", middleware.RateLimitMiddleware(cfg.AttendanceRateLimitPerMinute, time.Minute), attHandler.CheckIn)
+			protected.POST("/attendance/check-out", middleware.RateLimitMiddleware(cfg.AttendanceRateLimitPerMinute, time.Minute), attHandler.CheckOut)
+			protected.POST("/attendance/scan", middleware.RateLimitMiddleware(cfg.AttendanceRateLimitPerMinute, time.Minute), qrAttHandler.UnifiedScan)
 			protected.GET("/attendance/today", attHandler.GetToday)
 			protected.GET("/attendance/history", attHandler.GetHistory)
 

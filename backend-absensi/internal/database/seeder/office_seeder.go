@@ -18,6 +18,7 @@ func seedOffices(tx *gorm.DB) (Result, error) {
 		{Name: "Makassar Regional Office", Code: "MKS", Address: "Jl. Jenderal Sudirman No. 12, Makassar", Latitude: -5.139710, Longitude: 119.412411, AllowedRadiusMeter: 150, IsActive: true},
 		{Name: "Balikpapan Site Office", Code: "BPN", Address: "Jl. Jenderal Sudirman No. 1, Balikpapan", Latitude: -1.265386, Longitude: 116.831200, AllowedRadiusMeter: 180, IsActive: true},
 		{Name: "Palembang Branch Office", Code: "PLM", Address: "Jl. Kapten A. Rivai No. 25, Palembang", Latitude: -2.976074, Longitude: 104.749718, AllowedRadiusMeter: 130, IsActive: false},
+		{Name: "Runtime Test Office", Code: "TEST_OFFICE", Address: "Test Street No. 1", Latitude: -6.360310, Longitude: 106.832551, AllowedRadiusMeter: 1000, IsActive: true},
 	}
 
 	result := Result{}

@@ -30,6 +30,12 @@ func ConnectDB(cfg *config.Config) {
 		&models.Attendance{},
 		&models.AttendanceLog{},
 		&models.RefreshToken{},
+		&models.Permission{},
+		&models.RolePermission{},
+		&models.EmployeeQRCode{},
+		&models.QRAttendanceSession{},
+		&models.QRAttendanceScan{},
+		&models.AuditLog{},
 	)
 	if err != nil {
 		log.Fatal("Failed to migrate database:", err)

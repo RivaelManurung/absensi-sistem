@@ -1,6 +1,7 @@
 package seeder
 
 import (
+	"backend-absensi/internal/modules/rbac"
 	"fmt"
 	"log"
 
@@ -15,6 +16,7 @@ type Result struct {
 }
 
 type Summary struct {
+	Permissions Result
 	Offices     Result
 	Shifts      Result
 	Employees   Result
@@ -26,6 +28,11 @@ func Run(db *gorm.DB) (*Summary, error) {
 
 	err := db.Transaction(func(tx *gorm.DB) error {
 		var err error
+
+		if err := rbac.SeedPermissions(tx); err != nil {
+			return fmt.Errorf("seed permissions: %w", err)
+		}
+		summary.Permissions.Created = 1 // Simplified
 
 		summary.Offices, err = seedOffices(tx)
 		if err != nil {
@@ -58,6 +65,7 @@ func Run(db *gorm.DB) (*Summary, error) {
 
 func LogSummary(summary *Summary) {
 	log.Println("Seeder completed:")
+	log.Printf("- Permissions: %d initialized", summary.Permissions.Created)
 	log.Printf("- Offices: %d created / %d skipped", summary.Offices.Created, summary.Offices.Skipped)
 	log.Printf("- Shifts: %d created / %d skipped", summary.Shifts.Created, summary.Shifts.Skipped)
 	log.Printf("- Employees: %d created / %d skipped", summary.Employees.Created, summary.Employees.Skipped)

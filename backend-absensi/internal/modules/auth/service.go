@@ -20,12 +20,13 @@ type LoginResponse struct {
 	AccessToken  string      `json:"access_token"`
 	RefreshToken string      `json:"refresh_token"`
 	User         models.User `json:"user"`
+	Permissions  []string    `json:"permissions"`
 }
 
 type Service interface {
 	Login(req LoginRequest) (*LoginResponse, error)
 	RefreshToken(tokenStr string) (*LoginResponse, error)
-	Logout(tokenStr string) error
+	Logout(userID string) error
 }
 
 type service struct {
@@ -75,19 +76,55 @@ func (s *service) Login(req LoginRequest) (*LoginResponse, error) {
 }
 
 func (s *service) RefreshToken(tokenStr string) (*LoginResponse, error) {
-	// For simplicity, we search by comparing hashes or we could pass the ID.
-	// But according to requirements, we should hash refresh token before saving.
-	// This means we can't easily search by plaintext.
-	// A better way is to use "id:token" format or just search all if it's not too many.
-	// But let's stick to a simpler implementation for now where we might need a way to find it.
-	
-	// Actually, let's just use the token string as the ID for now or search by value (slow but works for demo).
-	// In production, you'd use a more efficient look up.
-	
-	// I'll skip the complex refresh token rotation for now to focus on the main features.
-	return nil, errors.New("not implemented")
+	tokens, err := s.repo.FindActiveRefreshTokens()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, token := range tokens {
+		if !password.Verify(tokenStr, token.TokenHash) {
+			continue
+		}
+
+		user, err := s.repo.FindByID(token.UserID.String())
+		if err != nil {
+			return nil, errors.New("invalid refresh token")
+		}
+
+		accessToken, err := jwt.GenerateToken(user.ID.String(), user.Email, string(user.Role), s.cfg.JWTAccessSecret, s.cfg.JWTAccessExpiresMinutes)
+		if err != nil {
+			return nil, err
+		}
+
+		newRefreshTokenStr := uuid.New().String()
+		newRefreshTokenHash, err := password.Hash(newRefreshTokenStr)
+		if err != nil {
+			return nil, err
+		}
+
+		if err := s.repo.RevokeRefreshTokenByID(token.ID.String()); err != nil {
+			return nil, err
+		}
+
+		refreshToken := &models.RefreshToken{
+			UserID:    user.ID,
+			TokenHash: newRefreshTokenHash,
+			ExpiresAt: time.Now().AddDate(0, 0, s.cfg.JWTRefreshExpiresDays),
+		}
+		if err := s.repo.CreateRefreshToken(refreshToken); err != nil {
+			return nil, err
+		}
+
+		return &LoginResponse{
+			AccessToken:  accessToken,
+			RefreshToken: newRefreshTokenStr,
+			User:         *user,
+		}, nil
+	}
+
+	return nil, errors.New("invalid refresh token")
 }
 
-func (s *service) Logout(tokenStr string) error {
-	return nil // Implementation later
+func (s *service) Logout(userID string) error {
+	return s.repo.RevokeUserRefreshTokens(userID)
 }

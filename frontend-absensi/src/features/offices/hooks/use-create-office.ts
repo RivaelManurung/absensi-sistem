@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { officeService } from "../services/office.service";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { AxiosError } from "axios";
 
 export function useCreateOffice() {
   const queryClient = useQueryClient();
@@ -12,9 +13,9 @@ export function useCreateOffice() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["offices"] });
       toast.success("Office created successfully");
-      router.push("/offices");
+      router.push("/admin/offices");
     },
-    onError: (error: any) => {
+    onError: (error: AxiosError<{ message?: string }>) => {
       toast.error(error.response?.data?.message || "Failed to create office");
     },
   });

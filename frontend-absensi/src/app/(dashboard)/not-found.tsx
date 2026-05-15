@@ -14,7 +14,7 @@ export default function DashboardNotFound() {
           The resource you are looking for might have been moved, deleted, or does not exist.
         </p>
       </div>
-      <Link href="/dashboard" className="mt-4">
+      <Link href="/admin/dashboard" className="mt-4">
         <Button>Back to Dashboard</Button>
       </Link>
     </div>

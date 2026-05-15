@@ -35,6 +35,12 @@ type BackendSingle<T> = {
   data: T;
 };
 
+export type ShiftQueryParams = {
+  page?: number;
+  limit?: number;
+  search?: string;
+};
+
 function mapShift(shift: BackendShift): Shift {
   return {
     id: shift.id,
@@ -81,7 +87,7 @@ function logShiftError(error: unknown) {
 }
 
 export const shiftService = {
-  getAll: async (params?: any) => {
+  getAll: async (params?: ShiftQueryParams) => {
     try {
       const response = await apiClient.get<BackendPage<BackendShift>>("/admin/shifts", { params });
       return response.data.data.items.map(mapShift);

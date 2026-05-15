@@ -30,6 +30,8 @@ export interface MeResponse {
   data: Partial<User>;
 }
 
+export type RefreshResponse = LoginResponse;
+
 export const authService = {
   login: async (payload: LoginPayload): Promise<LoginResponse> => {
     const { data } = await apiClient.post<LoginResponse>('/auth/login', payload);
@@ -39,5 +41,16 @@ export const authService = {
   me: async (): Promise<MeResponse> => {
     const { data } = await apiClient.get<MeResponse>('/auth/me');
     return data;
-  }
+  },
+
+  logout: async (): Promise<void> => {
+    await apiClient.post('/auth/logout');
+  },
+
+  refresh: async (refreshToken: string): Promise<RefreshResponse> => {
+    const { data } = await apiClient.post<RefreshResponse>('/auth/refresh', {
+      refresh_token: refreshToken,
+    });
+    return data;
+  },
 };

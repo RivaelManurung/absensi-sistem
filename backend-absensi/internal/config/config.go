@@ -9,21 +9,23 @@ import (
 )
 
 type Config struct {
-	AppName                  string
-	AppEnv                   string
-	AppPort                  string
-	DBHost                   string
-	DBPort                   string
-	DBUser                   string
-	DBPassword               string
-	DBName                   string
-	JWTAccessSecret          string
-	JWTRefreshSecret         string
-	JWTAccessExpiresMinutes  int
-	JWTRefreshExpiresDays    int
-	MaxLocationAccuracy      float64
-	CORSAllowedOrigins       string
-	LoginRateLimitPerMinute  int
+	AppName                      string
+	AppEnv                       string
+	AppPort                      string
+	DBHost                       string
+	DBPort                       string
+	DBUser                       string
+	DBPassword                   string
+	DBName                       string
+	JWTAccessSecret              string
+	JWTRefreshSecret             string
+	JWTAccessExpiresMinutes      int
+	JWTRefreshExpiresDays        int
+	MaxLocationAccuracy          float64
+	CORSAllowedOrigins           string
+	LoginRateLimitPerMinute      int
+	AttendanceRateLimitPerMinute int
+	QRSecret                     string
 }
 
 func LoadConfig() *Config {
@@ -33,21 +35,23 @@ func LoadConfig() *Config {
 	}
 
 	return &Config{
-		AppName:                 getEnv("APP_NAME", "absensi"),
-		AppEnv:                  getEnv("APP_ENV", "development"),
-		AppPort:                 getEnv("APP_PORT", "8080"),
-		DBHost:                  getEnv("DB_HOST", "localhost"),
-		DBPort:                  getEnv("DB_PORT", "5432"),
-		DBUser:                  getEnv("DB_USER", "postgres"),
-		DBPassword:              getEnv("DB_PASSWORD", "postgres"),
-		DBName:                  getEnv("DB_NAME", "absensi"),
-		JWTAccessSecret:         getEnv("JWT_ACCESS_SECRET", "access-secret"),
-		JWTRefreshSecret:        getEnv("JWT_REFRESH_SECRET", "refresh-secret"),
-		JWTAccessExpiresMinutes: getEnvInt("JWT_ACCESS_EXPIRES_MINUTES", 15),
-		JWTRefreshExpiresDays:   getEnvInt("JWT_REFRESH_EXPIRES_DAYS", 7),
-		MaxLocationAccuracy:     getEnvFloat("MAX_LOCATION_ACCURACY", 50.0),
-		CORSAllowedOrigins:      getEnv("CORS_ALLOWED_ORIGINS", "*"),
-		LoginRateLimitPerMinute: getEnvInt("LOGIN_RATE_LIMIT_PER_MINUTE", 5),
+		AppName:                      getEnv("APP_NAME", "absensi"),
+		AppEnv:                       getEnv("APP_ENV", "development"),
+		AppPort:                      getEnv("APP_PORT", "8080"),
+		DBHost:                       getEnv("DB_HOST", "localhost"),
+		DBPort:                       getEnv("DB_PORT", "5432"),
+		DBUser:                       getEnv("DB_USER", "postgres"),
+		DBPassword:                   getEnv("DB_PASSWORD", "postgres"),
+		DBName:                       getEnv("DB_NAME", "absensi"),
+		JWTAccessSecret:              getEnv("JWT_ACCESS_SECRET", "access-secret"),
+		JWTRefreshSecret:             getEnv("JWT_REFRESH_SECRET", "refresh-secret"),
+		JWTAccessExpiresMinutes:      getEnvInt("JWT_ACCESS_EXPIRES_MINUTES", 15),
+		JWTRefreshExpiresDays:        getEnvInt("JWT_REFRESH_EXPIRES_DAYS", 7),
+		MaxLocationAccuracy:          getEnvFloat("MAX_LOCATION_ACCURACY", 50.0),
+		CORSAllowedOrigins:           getEnv("CORS_ALLOWED_ORIGINS", "*"),
+		LoginRateLimitPerMinute:      getEnvInt("LOGIN_RATE_LIMIT_PER_MINUTE", 5),
+		AttendanceRateLimitPerMinute: getEnvInt("ATTENDANCE_RATE_LIMIT_PER_MINUTE", 10),
+		QRSecret:                     getEnv("QR_SECRET", "qr-secret-change-me"),
 	}
 }
 

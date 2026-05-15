@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { shiftService } from './shift.service';
 import { ShiftFormValues } from './schemas/shift.schema';
 import { toast } from 'sonner';
+import { AxiosError } from 'axios';
 
 export const useShifts = (params?: { page?: number; limit?: number; search?: string }) => {
   return useQuery({
@@ -26,7 +27,7 @@ export const useCreateShift = () => {
       queryClient.invalidateQueries({ queryKey: ['shifts'] });
       toast.success('Shift created successfully');
     },
-    onError: (error: any) => {
+    onError: (error: AxiosError<{ message?: string }>) => {
       toast.error(error.response?.data?.message || 'Failed to create shift');
     },
   });
@@ -41,7 +42,7 @@ export const useUpdateShift = () => {
       queryClient.invalidateQueries({ queryKey: ['shifts', variables.id] });
       toast.success('Shift updated successfully');
     },
-    onError: (error: any) => {
+    onError: (error: AxiosError<{ message?: string }>) => {
       toast.error(error.response?.data?.message || 'Failed to update shift');
     },
   });
@@ -55,7 +56,7 @@ export const useDeleteShift = () => {
       queryClient.invalidateQueries({ queryKey: ['shifts'] });
       toast.success('Shift deleted successfully');
     },
-    onError: (error: any) => {
+    onError: (error: AxiosError<{ message?: string }>) => {
       toast.error(error.response?.data?.message || 'Failed to delete shift');
     },
   });

@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import { officeService } from "../services/office.service";
+import { officeService, OfficeQueryParams } from "../services/office.service";
 
-export function useOffices(params?: any) {
+export function useOffices(params?: OfficeQueryParams) {
   return useQuery({
     queryKey: ["offices", params],
     queryFn: () => officeService.getAll(params),

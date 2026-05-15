@@ -24,9 +24,12 @@ func (b *Base) BeforeCreate(tx *gorm.DB) error {
 type UserRole string
 
 const (
-	RoleAdmin    UserRole = "admin"
-	RoleHR       UserRole = "hr"
-	RoleEmployee UserRole = "employee"
+	RoleSuperAdmin UserRole = "super_admin"
+	RoleAdmin      UserRole = "admin"
+	RoleHR         UserRole = "hr"
+	RoleManager    UserRole = "manager"
+	RoleSecurity   UserRole = "security"
+	RoleEmployee   UserRole = "employee"
 )
 
 type User struct {
@@ -139,6 +142,77 @@ func (al *AttendanceLog) BeforeCreate(tx *gorm.DB) error {
 		al.ID = uuid.New()
 	}
 	return nil
+}
+
+type Permission struct {
+	Base
+	Name        string `gorm:"size:100;uniqueIndex" json:"name"`
+	Description string `gorm:"type:text" json:"description"`
+}
+
+type RolePermission struct {
+	Role         UserRole   `gorm:"type:varchar(20);primaryKey" json:"role"`
+	PermissionID uuid.UUID  `gorm:"type:uuid;primaryKey" json:"permission_id"`
+	Permission   Permission `gorm:"foreignKey:PermissionID" json:"permission,omitempty"`
+}
+
+type EmployeeQRCode struct {
+	Base
+	EmployeeID uuid.UUID `gorm:"type:uuid;index" json:"employee_id"`
+	Employee   Employee  `gorm:"foreignKey:EmployeeID" json:"employee,omitempty"`
+	TokenHash  string    `gorm:"size:255;uniqueIndex" json:"-"`
+	Status     string    `gorm:"size:20;default:'active'" json:"status"` // active, revoked
+	CreatedBy  uuid.UUID `gorm:"type:uuid" json:"created_by"`
+	RevokedAt  *time.Time `json:"revoked_at"`
+	RevokedBy  *uuid.UUID `gorm:"type:uuid" json:"revoked_by"`
+	LastUsedAt *time.Time `json:"last_used_at"`
+}
+
+type QRAttendanceSession struct {
+	Base
+	OfficeID         uuid.UUID `gorm:"type:uuid;index" json:"office_id"`
+	Office           Office    `gorm:"foreignKey:OfficeID" json:"office,omitempty"`
+	ShiftID          *uuid.UUID `gorm:"type:uuid" json:"shift_id"`
+	Shift            *Shift     `gorm:"foreignKey:ShiftID" json:"shift,omitempty"`
+	SessionTokenHash string    `gorm:"size:255;uniqueIndex" json:"-"`
+	Purpose          string    `gorm:"size:20" json:"purpose"` // check_in, check_out, both
+	ExpiresAt        time.Time `json:"expires_at"`
+	CreatedBy        uuid.UUID `gorm:"type:uuid" json:"created_by"`
+	Status           string    `gorm:"size:20;default:'active'" json:"status"` // active, revoked
+	RevokedAt        *time.Time `json:"revoked_at"`
+	RevokedBy        *uuid.UUID `gorm:"type:uuid" json:"revoked_by"`
+}
+
+type QRAttendanceScan struct {
+	Base
+	QRSessionID      *uuid.UUID `gorm:"type:uuid;index" json:"qr_session_id"`
+	EmployeeQRCodeID *uuid.UUID `gorm:"type:uuid;index" json:"employee_qr_code_id"`
+	EmployeeID       uuid.UUID  `gorm:"type:uuid;index" json:"employee_id"`
+	Employee         Employee   `gorm:"foreignKey:EmployeeID" json:"employee,omitempty"`
+	ScannedByUserID  *uuid.UUID `gorm:"type:uuid;index" json:"scanned_by_user_id"`
+	OfficeID         *uuid.UUID `gorm:"type:uuid" json:"office_id"`
+	AttendanceID     *uuid.UUID `gorm:"type:uuid" json:"attendance_id"`
+	ScanType         string     `gorm:"size:30" json:"scan_type"` // office_dynamic_qr, employee_identity_qr
+	Action           string     `gorm:"size:20" json:"action"`    // check_in, check_out
+	Latitude         *float64   `gorm:"type:decimal(10,8)" json:"latitude"`
+	Longitude        *float64   `gorm:"type:decimal(11,8)" json:"longitude"`
+	Accuracy         *float64   `gorm:"type:decimal(8,2)" json:"accuracy"`
+	DeviceID         string     `gorm:"size:255" json:"device_id"`
+	IPAddress        string     `gorm:"size:45" json:"ip_address"`
+	UserAgent        string     `gorm:"type:text" json:"user_agent"`
+	Status           string     `gorm:"size:20" json:"status"` // success, failed
+	FailureReason    string     `gorm:"type:text" json:"failure_reason"`
+}
+
+type AuditLog struct {
+	Base
+	ActorUserID uuid.UUID `gorm:"type:uuid;index" json:"actor_user_id"`
+	Action      string    `gorm:"size:100" json:"action"`
+	EntityType  string    `gorm:"size:50" json:"entity_type"`
+	EntityID    uuid.UUID `gorm:"type:uuid;index" json:"entity_id"`
+	Metadata    string    `gorm:"type:jsonb" json:"metadata"`
+	IPAddress   string    `gorm:"size:45" json:"ip_address"`
+	UserAgent   string    `gorm:"type:text" json:"user_agent"`
 }
 
 type RefreshToken struct {

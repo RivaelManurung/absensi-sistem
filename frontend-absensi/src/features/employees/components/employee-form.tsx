@@ -23,6 +23,8 @@ import {
 import { Employee } from "../types/employee.type";
 import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
+import { useOffices } from "@/features/offices/hooks/use-offices";
+import { useShifts } from "@/features/shifts/hooks/use-shifts";
 
 interface EmployeeFormProps {
   initialData?: Employee;
@@ -31,6 +33,9 @@ interface EmployeeFormProps {
 }
 
 export function EmployeeForm({ initialData, onSubmit, isLoading }: EmployeeFormProps) {
+  const { data: offices = [], isLoading: isLoadingOffices } = useOffices({ limit: 100 });
+  const { data: shifts = [], isLoading: isLoadingShifts } = useShifts({ limit: 100 });
+
   const form = useForm<EmployeeFormValues>({
     resolver: zodResolver(employeeSchema),
     defaultValues: {
@@ -39,7 +44,9 @@ export function EmployeeForm({ initialData, onSubmit, isLoading }: EmployeeFormP
       email: "",
       phone: "",
       office_id: "",
+      shift_id: "",
       position: "",
+      department: "",
       role: "employee",
       status: "Active",
       password: "",
@@ -55,7 +62,9 @@ export function EmployeeForm({ initialData, onSubmit, isLoading }: EmployeeFormP
         email: initialData.email,
         phone: initialData.phone,
         office_id: initialData.office_id,
+        shift_id: initialData.shift_id,
         position: initialData.position,
+        department: initialData.department,
         role: initialData.role,
         status: initialData.status,
         password: "",
@@ -133,12 +142,39 @@ export function EmployeeForm({ initialData, onSubmit, isLoading }: EmployeeFormP
                 <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select an office" />
+                      <SelectValue placeholder={isLoadingOffices ? "Loading offices..." : "Select an office"} />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="1">Main Office</SelectItem>
-                    <SelectItem value="2">Branch A</SelectItem>
+                    {offices.map((office) => (
+                      <SelectItem key={office.id} value={office.id}>
+                        {office.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField<EmployeeFormValues, "shift_id">
+            control={form.control}
+            name="shift_id"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Shift</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder={isLoadingShifts ? "Loading shifts..." : "Select a shift"} />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {shifts.map((shift) => (
+                      <SelectItem key={shift.id} value={shift.id}>
+                        {shift.name} ({shift.start_time} - {shift.end_time})
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -153,6 +189,19 @@ export function EmployeeForm({ initialData, onSubmit, isLoading }: EmployeeFormP
                 <FormLabel>Position</FormLabel>
                 <FormControl>
                   <Input placeholder="Software Engineer" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField<EmployeeFormValues, "department">
+            control={form.control}
+            name="department"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Department</FormLabel>
+                <FormControl>
+                  <Input placeholder="Engineering" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -238,7 +287,7 @@ export function EmployeeForm({ initialData, onSubmit, isLoading }: EmployeeFormP
           <Button type="button" variant="outline" onClick={() => window.history.back()}>
             Cancel
           </Button>
-          <Button type="submit" disabled={isLoading}>
+          <Button type="submit" disabled={isLoading || isLoadingOffices || isLoadingShifts}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {initialData ? "Update Employee" : "Create Employee"}
           </Button>

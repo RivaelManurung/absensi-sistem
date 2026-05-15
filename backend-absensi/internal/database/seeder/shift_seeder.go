@@ -13,6 +13,7 @@ func seedShifts(tx *gorm.DB) (Result, error) {
 		{Name: "Afternoon", Code: "AFTERNOON", StartTime: "14:00", EndTime: "22:00", CheckInStart: "13:15", CheckInEnd: "14:45", CheckOutStart: "21:30", CheckOutEnd: "23:00", LateToleranceMinutes: 10, BreakDurationMinutes: 45, IsActive: true},
 		{Name: "Night", Code: "NIGHT", StartTime: "22:00", EndTime: "06:00", CheckInStart: "21:15", CheckInEnd: "22:45", CheckOutStart: "05:30", CheckOutEnd: "07:00", LateToleranceMinutes: 10, BreakDurationMinutes: 45, IsActive: true},
 		{Name: "Flexible", Code: "FLEXIBLE", StartTime: "09:00", EndTime: "18:00", CheckInStart: "07:30", CheckInEnd: "10:30", CheckOutStart: "17:00", CheckOutEnd: "20:00", LateToleranceMinutes: 30, BreakDurationMinutes: 60, IsActive: true},
+		{Name: "Runtime Test Shift", Code: "TEST_RUNTIME", StartTime: "00:00", EndTime: "23:59", CheckInStart: "00:00", CheckInEnd: "23:59", CheckOutStart: "00:00", CheckOutEnd: "23:59", LateToleranceMinutes: 999, BreakDurationMinutes: 0, IsActive: true},
 	}
 
 	result := Result{}

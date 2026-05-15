@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { employeeService } from './employee.service';
 import { EmployeeFormValues } from './schemas/employee.schema';
 import { toast } from 'sonner';
+import { AxiosError } from 'axios';
 
 export const useEmployees = (params?: { page?: number; limit?: number; search?: string }) => {
   return useQuery({
@@ -26,7 +27,7 @@ export const useCreateEmployee = () => {
       queryClient.invalidateQueries({ queryKey: ['employees'] });
       toast.success('Employee created successfully');
     },
-    onError: (error: any) => {
+    onError: (error: AxiosError<{ message?: string }>) => {
       toast.error(error.response?.data?.message || 'Failed to create employee');
     },
   });
@@ -41,7 +42,7 @@ export const useUpdateEmployee = () => {
       queryClient.invalidateQueries({ queryKey: ['employees', variables.id] });
       toast.success('Employee updated successfully');
     },
-    onError: (error: any) => {
+    onError: (error: AxiosError<{ message?: string }>) => {
       toast.error(error.response?.data?.message || 'Failed to update employee');
     },
   });
@@ -55,7 +56,7 @@ export const useDeleteEmployee = () => {
       queryClient.invalidateQueries({ queryKey: ['employees'] });
       toast.success('Employee deleted successfully');
     },
-    onError: (error: any) => {
+    onError: (error: AxiosError<{ message?: string }>) => {
       toast.error(error.response?.data?.message || 'Failed to delete employee');
     },
   });

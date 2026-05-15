@@ -9,7 +9,10 @@ export interface Employee {
   phone?: string;
   office_id: string;
   office_name?: string;
+  shift_id: string;
+  shift_name?: string;
   position: string;
+  department?: string;
   role: EmployeeRole;
   status: EmployeeStatus;
   created_at: string;
@@ -22,10 +25,12 @@ export interface CreateEmployeePayload {
   email: string;
   phone?: string;
   office_id: string;
+  shift_id: string;
   position: string;
+  department?: string;
   role: EmployeeRole;
   status: EmployeeStatus;
   password?: string;
 }
 
-export interface UpdateEmployeePayload extends Partial<CreateEmployeePayload> {}
+export type UpdateEmployeePayload = Partial<CreateEmployeePayload>;

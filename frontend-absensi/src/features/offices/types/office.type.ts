@@ -24,4 +24,4 @@ export interface CreateOfficePayload {
   status: OfficeStatus;
 }
 
-export interface UpdateOfficePayload extends Partial<CreateOfficePayload> {}
+export type UpdateOfficePayload = Partial<CreateOfficePayload>;

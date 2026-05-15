@@ -135,9 +135,10 @@ func employeeSeeds() []employeeSeed {
 		"Melati Handayani", "Wahyu Saputra", "Rosa Damayanti", "Kevin Gunawan", "Dian Purnama",
 		"Yusuf Hidayat", "Selvi Natalia", "Gilang Pratama", "Nabila Zahra", "Rafi Alamsyah",
 		"Monica Larasati", "Ilham Maulana", "Sarah Maharani", "Taufik Iskandar", "Clara Aprilia",
+		"Runtime Test User",
 	}
-	officeCodes := []string{"JKT", "BDG", "SBY", "MDN", "SMG", "YGY", "DPS", "MKS", "BPN", "PLM"}
-	shiftCodes := []string{"REGULAR", "MORNING", "AFTERNOON", "NIGHT", "FLEXIBLE"}
+	officeCodes := []string{"JKT", "BDG", "SBY", "MDN", "SMG", "YGY", "DPS", "MKS", "BPN", "PLM", "TEST_OFFICE"}
+	shiftCodes := []string{"REGULAR", "MORNING", "AFTERNOON", "NIGHT", "FLEXIBLE", "TEST_RUNTIME"}
 	departments := []string{"Engineering", "People Operations", "Finance", "Sales", "Operations", "Customer Success", "Product", "Legal"}
 	positions := []string{"Backend Engineer", "HR Specialist", "Account Executive", "Operations Analyst", "Product Associate", "Finance Officer", "Support Lead", "QA Engineer"}
 
@@ -164,8 +165,14 @@ func employeeSeeds() []employeeSeed {
 		if number == 3 {
 			email = "hr@example.com"
 		}
+		if name == "Runtime Test User" {
+			email = "attendance.test@example.com"
+			role = models.RoleEmployee
+			position = "Runtime Tester"
+			department = "QA"
+		}
 
-		items = append(items, employeeSeed{
+		item := employeeSeed{
 			Code:       fmt.Sprintf("EMP%03d", number),
 			Name:       name,
 			Email:      email,
@@ -176,7 +183,15 @@ func employeeSeeds() []employeeSeed {
 			OfficeCode: officeCodes[i%len(officeCodes)],
 			ShiftCode:  shiftCodes[i%len(shiftCodes)],
 			IsActive:   number%17 != 0,
-		})
+		}
+
+		if name == "Runtime Test User" {
+			item.OfficeCode = "TEST_OFFICE"
+			item.ShiftCode = "TEST_RUNTIME"
+			item.IsActive = true
+		}
+
+		items = append(items, item)
 	}
 	return items
 }

@@ -6,7 +6,9 @@ export const employeeSchema = z.object({
   email: z.string().email("Invalid email address"),
   phone: z.string().optional(),
   office_id: z.string().min(1, "Office is required"),
+  shift_id: z.string().min(1, "Shift is required"),
   position: z.string().min(1, "Position is required"),
+  department: z.string().optional(),
   role: z.enum(["admin", "hr", "employee"], {
     message: "Role is required",
   }),

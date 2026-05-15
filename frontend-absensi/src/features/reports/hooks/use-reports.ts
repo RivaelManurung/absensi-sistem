@@ -1,9 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
-import { reportService } from "../services/report.service";
+import { reportService, ReportQueryParams } from "../services/report.service";
 
-export function useReports() {
+export function useReports(params?: ReportQueryParams) {
   return useQuery({
-    queryKey: ["reports"],
-    queryFn: () => reportService.getAll(),
+    queryKey: ["reports", params],
+    queryFn: () => reportService.getAll(params),
   });
 }

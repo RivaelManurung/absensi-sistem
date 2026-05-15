@@ -31,7 +31,7 @@ export default function DashboardError({
           <RefreshCcw className="mr-2 h-4 w-4" />
           Try again
         </Button>
-        <Button onClick={() => window.location.href = "/dashboard"} variant="outline">
+        <Button onClick={() => window.location.href = "/admin/dashboard"} variant="outline">
           Return Home
         </Button>
       </div>

@@ -4,13 +4,15 @@ import (
 	"backend-absensi/internal/models"
 	"backend-absensi/internal/pkg/password"
 	"backend-absensi/internal/pkg/response"
+	"errors"
 	"math"
 
 	"github.com/google/uuid"
 )
 
 type EmployeeRequest struct {
-	Name         string `json:"name" binding:"required"`
+	Name         string `json:"name"`
+	FullName     string `json:"full_name"`
 	Email        string `json:"email" binding:"required,email"`
 	Password     string `json:"password"`
 	EmployeeCode string `json:"employee_code" binding:"required"`
@@ -19,6 +21,7 @@ type EmployeeRequest struct {
 	Department   string `json:"department"`
 	OfficeID     string `json:"office_id" binding:"required"`
 	ShiftID      string `json:"shift_id" binding:"required"`
+	Role         string `json:"role"`
 	IsActive     *bool  `json:"is_active"`
 }
 
@@ -62,28 +65,46 @@ func (s *service) GetByID(id string) (*models.Employee, error) {
 }
 
 func (s *service) Create(req EmployeeRequest) (*models.Employee, error) {
+	fullName := req.displayName()
+	if fullName == "" {
+		return nil, errors.New("full_name is required")
+	}
+
 	pass := req.Password
 	if pass == "" {
 		pass = "password123" // Default password
 	}
 
-	hash, _ := password.Hash(pass)
+	hash, err := password.Hash(pass)
+	if err != nil {
+		return nil, err
+	}
 	isActive := activeOrDefault(req.IsActive, true)
+	role, err := parseRole(req.Role)
+	if err != nil {
+		return nil, err
+	}
 
 	user := &models.User{
-		Name:         req.Name,
+		Name:         fullName,
 		Email:        req.Email,
 		PasswordHash: hash,
-		Role:         models.RoleEmployee,
+		Role:         role,
 		IsActive:     isActive,
 	}
 
-	officeID, _ := uuid.Parse(req.OfficeID)
-	shiftID, _ := uuid.Parse(req.ShiftID)
+	officeID, err := uuid.Parse(req.OfficeID)
+	if err != nil {
+		return nil, errors.New("office_id must be a valid UUID")
+	}
+	shiftID, err := uuid.Parse(req.ShiftID)
+	if err != nil {
+		return nil, errors.New("shift_id must be a valid UUID")
+	}
 
 	employee := &models.Employee{
 		EmployeeCode: req.EmployeeCode,
-		FullName:     req.Name,
+		FullName:     fullName,
 		Phone:        req.Phone,
 		Position:     req.Position,
 		Department:   req.Department,
@@ -104,23 +125,41 @@ func (s *service) Update(id string, req EmployeeRequest) (*models.Employee, erro
 	if err != nil {
 		return nil, err
 	}
+	fullName := req.displayName()
+	if fullName == "" {
+		return nil, errors.New("full_name is required")
+	}
+	role, err := parseRole(req.Role)
+	if err != nil {
+		return nil, err
+	}
 
 	user := &employee.User
-	user.Name = req.Name
+	user.Name = fullName
 	user.Email = req.Email
+	user.Role = role
 	isActive := activeOrDefault(req.IsActive, employee.IsActive)
 	user.IsActive = isActive
 
 	if req.Password != "" {
-		hash, _ := password.Hash(req.Password)
+		hash, err := password.Hash(req.Password)
+		if err != nil {
+			return nil, err
+		}
 		user.PasswordHash = hash
 	}
 
-	officeID, _ := uuid.Parse(req.OfficeID)
-	shiftID, _ := uuid.Parse(req.ShiftID)
+	officeID, err := uuid.Parse(req.OfficeID)
+	if err != nil {
+		return nil, errors.New("office_id must be a valid UUID")
+	}
+	shiftID, err := uuid.Parse(req.ShiftID)
+	if err != nil {
+		return nil, errors.New("shift_id must be a valid UUID")
+	}
 
 	employee.EmployeeCode = req.EmployeeCode
-	employee.FullName = req.Name
+	employee.FullName = fullName
 	employee.Phone = req.Phone
 	employee.Position = req.Position
 	employee.Department = req.Department
@@ -144,4 +183,24 @@ func activeOrDefault(value *bool, fallback bool) bool {
 		return fallback
 	}
 	return *value
+}
+
+func (r EmployeeRequest) displayName() string {
+	if r.FullName != "" {
+		return r.FullName
+	}
+	return r.Name
+}
+
+func parseRole(value string) (models.UserRole, error) {
+	switch value {
+	case "", string(models.RoleEmployee):
+		return models.RoleEmployee, nil
+	case string(models.RoleAdmin):
+		return models.RoleAdmin, nil
+	case string(models.RoleHR):
+		return models.RoleHR, nil
+	default:
+		return "", errors.New("role must be one of admin, hr, employee")
+	}
 }
