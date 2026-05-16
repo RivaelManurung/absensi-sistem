@@ -65,8 +65,24 @@ func (s *Service) HasPermission(role models.UserRole, permission string) bool {
 
 func (s *Service) GetRolePermissions(role models.UserRole) []string {
 	if role == models.RoleSuperAdmin {
-		// Return all permissions (could be improved by fetching all from DB)
-		return []string{"*"}
+		var allPerms []string
+		s.mu.RLock()
+		for _, perms := range s.cache {
+			for _, p := range perms {
+				found := false
+				for _, ap := range allPerms {
+					if ap == p {
+						found = true
+						break
+					}
+				}
+				if !found {
+					allPerms = append(allPerms, p)
+				}
+			}
+		}
+		s.mu.RUnlock()
+		return allPerms
 	}
 
 	s.mu.RLock()

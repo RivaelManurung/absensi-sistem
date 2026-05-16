@@ -12,6 +12,8 @@ import {
   LogOut,
   QrCode,
   Settings,
+  Shield,
+  ShieldCheck,
   User,
   Users,
 } from "lucide-react"
@@ -33,32 +35,59 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { useAuth } from "@/features/auth/use-auth"
+import { Permission, hasPermission } from "@/lib/permissions"
 
 const navMain = [
   {
     title: "Dashboard",
     url: "/admin/dashboard",
     icon: LayoutDashboard,
+    permission: "dashboard.read" as Permission,
   },
   {
     title: "Employees",
     url: "/admin/employees",
     icon: Users,
+    permission: "employee.read" as Permission,
   },
   {
     title: "Offices",
     url: "/admin/offices",
     icon: Building2,
+    permission: "office.read" as Permission,
   },
   {
     title: "Shifts",
     url: "/admin/shifts",
     icon: Calendar,
+    permission: "shift.read" as Permission,
   },
   {
     title: "Reports",
     url: "/admin/reports",
     icon: FileText,
+    permission: "report.read" as Permission,
+  },
+]
+
+const navSecurity = [
+  {
+    title: "Roles",
+    url: "/admin/roles",
+    icon: Shield,
+    permission: "role.read" as Permission,
+  },
+  {
+    title: "Permissions",
+    url: "/admin/permissions",
+    icon: ShieldCheck,
+    permission: "permission.read" as Permission,
+  },
+  {
+    title: "Users",
+    url: "/admin/users",
+    icon: User,
+    permission: "user.read" as Permission,
   },
 ]
 
@@ -67,11 +96,13 @@ const navApp = [
     title: "QR Attendance",
     url: "/app/attendance",
     icon: QrCode,
+    permission: "attendance.self.check_in" as Permission,
   },
   {
     title: "Attendance History",
     url: "/app/attendance/history",
     icon: Clock3,
+    permission: "attendance.history.read" as Permission,
   },
 ]
 
@@ -85,6 +116,7 @@ const navAccount = [
     title: "Settings",
     url: "/admin/settings",
     icon: Settings,
+    permission: "setting.manage" as Permission,
   },
 ]
 
@@ -99,7 +131,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const displayEmail = user?.email || "Signed in"
   const initials = displayName
     .split(" ")
-    .map((part) => part[0])
+    .map((part: string) => part[0])
     .join("")
     .slice(0, 2)
     .toUpperCase()
@@ -136,11 +168,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
           <SidebarGroupContent>
             <SidebarMenu>
-              {navMain.map((item) => {
-                const active = isRouteActive(pathname, item.url)
+              {navMain
+                .filter((item) => !item.permission || hasPermission(user, item.permission))
+                .map((item) => {
+                  const active = isRouteActive(pathname, item.url)
 
-                return (
-                  <SidebarMenuItem key={item.title}>
+                  return (
+                    <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton
                       asChild
                       tooltip={item.title}
@@ -172,16 +206,52 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
         <SidebarGroup>
           <SidebarGroupLabel className="px-2 text-xs font-medium text-muted-foreground">
+            RBAC & Security
+          </SidebarGroupLabel>
+
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {navSecurity
+                .filter((item) => !item.permission || hasPermission(user, item.permission))
+                .map((item) => {
+                  const active = isRouteActive(pathname, item.url)
+
+                  return (
+                    <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton
+                      asChild
+                      tooltip={item.title}
+                      isActive={active}
+                      className="h-9 rounded-md px-2 text-sm font-medium data-[active=true]:bg-accent data-[active=true]:text-accent-foreground"
+                    >
+                      <Link href={item.url}>
+                        <item.icon className="size-4 text-muted-foreground" />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )
+              })}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <Separator className="my-2" />
+
+        <SidebarGroup>
+          <SidebarGroupLabel className="px-2 text-xs font-medium text-muted-foreground">
             Employee App
           </SidebarGroupLabel>
 
           <SidebarGroupContent>
             <SidebarMenu>
-              {navApp.map((item) => {
-                const active = isRouteActive(pathname, item.url)
+              {navApp
+                .filter((item) => !item.permission || hasPermission(user, item.permission))
+                .map((item) => {
+                  const active = isRouteActive(pathname, item.url)
 
-                return (
-                  <SidebarMenuItem key={item.title}>
+                  return (
+                    <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton
                       asChild
                       tooltip={item.title}
@@ -209,11 +279,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
           <SidebarGroupContent>
             <SidebarMenu>
-              {navAccount.map((item) => {
-                const active = isRouteActive(pathname, item.url)
+              {navAccount
+                .filter((item) => !item.permission || hasPermission(user, item.permission))
+                .map((item) => {
+                  const active = isRouteActive(pathname, item.url)
 
-                return (
-                  <SidebarMenuItem key={item.title}>
+                  return (
+                    <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton
                       asChild
                       tooltip={item.title}

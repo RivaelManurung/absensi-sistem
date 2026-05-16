@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Employee } from "../types/employee.type";
 import { Separator } from "@/components/ui/separator";
 import { Mail, Phone, Building, Briefcase, Calendar, Shield } from "lucide-react";
+import { format } from "date-fns";
 
 interface EmployeeDetailCardProps {
   employee: Employee;
@@ -65,7 +66,7 @@ export function EmployeeDetailCard({ employee }: EmployeeDetailCardProps) {
             <Calendar className="size-4 text-muted-foreground" />
             <div className="space-y-0.5">
               <p className="text-[10px] font-bold uppercase text-muted-foreground">Member Since</p>
-              <p className="text-sm">{new Date(employee.created_at).toLocaleDateString()}</p>
+              <p className="text-sm">{format(new Date(employee.created_at), "dd/MM/yyyy")}</p>
             </div>
           </div>
         </div>

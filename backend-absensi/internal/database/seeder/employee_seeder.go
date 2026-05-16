@@ -38,19 +38,40 @@ func seedEmployees(tx *gorm.DB) (Result, error) {
 
 	result := Result{}
 	for _, item := range employeeSeeds() {
-		var existingEmployee models.Employee
-		err := tx.Where("employee_code = ?", item.Code).First(&existingEmployee).Error
-		if err == nil {
-			result.Skipped++
-			continue
-		}
-		if err != gorm.ErrRecordNotFound {
+		// 1. First, find or create the User
+		var user models.User
+		err = tx.Where("email = ?", item.Email).First(&user).Error
+		
+		switch err {
+		case nil:
+			// User exists, check if role needs update
+			if user.Role != item.Role {
+				if err := tx.Model(&user).Update("role", item.Role).Error; err != nil {
+					return result, err
+				}
+			}
+		case gorm.ErrRecordNotFound:
+			// User doesn't exist, create it
+			user = models.User{
+				Name:         item.Name,
+				Email:        item.Email,
+				PasswordHash: hash,
+				Role:         item.Role,
+				IsActive:     item.IsActive,
+			}
+			if err := tx.Create(&user).Error; err != nil {
+				return result, err
+			}
+		default:
 			return result, err
 		}
 
-		var existingUser models.User
-		err = tx.Where("email = ?", item.Email).First(&existingUser).Error
+		// 2. Then, find or create the Employee
+		var existingEmployee models.Employee
+		err := tx.Where("employee_code = ?", item.Code).First(&existingEmployee).Error
 		if err == nil {
+			// Employee exists, check for updates if needed (e.g. name/position)
+			// For now just skip as per previous logic, but role was already updated above
 			result.Skipped++
 			continue
 		}
@@ -65,17 +86,6 @@ func seedEmployees(tx *gorm.DB) (Result, error) {
 		shiftID, ok := shiftIDs[item.ShiftCode]
 		if !ok {
 			return result, fmt.Errorf("shift code %s not found", item.ShiftCode)
-		}
-
-		user := models.User{
-			Name:         item.Name,
-			Email:        item.Email,
-			PasswordHash: hash,
-			Role:         item.Role,
-			IsActive:     item.IsActive,
-		}
-		if err := tx.Create(&user).Error; err != nil {
-			return result, err
 		}
 
 		employee := models.Employee{
@@ -161,6 +171,7 @@ func employeeSeeds() []employeeSeed {
 		}
 		if number == 1 {
 			email = "admin@example.com"
+			role = models.RoleSuperAdmin
 		}
 		if number == 3 {
 			email = "hr@example.com"

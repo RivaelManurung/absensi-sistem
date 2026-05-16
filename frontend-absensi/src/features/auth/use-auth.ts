@@ -55,7 +55,15 @@ export const useAuth = () => {
       setCookie(REFRESH_COOKIE_NAME, res.data.refresh_token, { maxAge: 60 * 60 * 24 * 7 });
       setCookie(ROLE_COOKIE_NAME, res.data.user.role, { maxAge: 60 * 60 * 12 });
       toastHelper.success('Login successful', `Welcome back, ${res.data.user.name}!`);
-      queryClient.setQueryData(['auth', 'me'], { data: res.data.user });
+      if (process.env.NODE_ENV === "development") {
+        console.log("AUTH USER PERMISSIONS:", res.data.permissions);
+      }
+      queryClient.setQueryData(['auth', 'me'], { 
+        data: { 
+          ...res.data.user, 
+          permissions: res.data.permissions 
+        } 
+      });
       router.replace(redirectTo);
     },
     onError: (error: AxiosError<{ message?: string }>) => {

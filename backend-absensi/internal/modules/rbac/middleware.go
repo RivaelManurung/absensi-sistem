@@ -20,6 +20,13 @@ func Middleware(rbacService *Service, permission string) gin.HandlerFunc {
 		}
 
 		userRole := models.UserRole(role.(string))
+
+		// Super admin bypass
+		if userRole == models.RoleSuperAdmin {
+			c.Next()
+			return
+		}
+
 		if !rbacService.HasPermission(userRole, permission) {
 			c.JSON(http.StatusForbidden, gin.H{
 				"success": false,

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { QRScanner } from '@/components/qr/qr-scanner';
 import { qrService } from '@/features/attendance/qr.service';
 import { toast } from 'sonner';
@@ -9,9 +9,15 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LucideCheckCircle, LucideAlertTriangle, LucideLoader2, LucideUserCheck, LucideUserX } from 'lucide-react';
 import { AxiosError } from 'axios';
+import { format } from 'date-fns';
 
 export default function AdminScanPage() {
+  const [mounted, setMounted] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   const [action, setAction] = useState<'check_in' | 'check_out'>('check_in');
   const [result, setResult] = useState<{ success: boolean; message: string; data?: unknown } | null>(null);
 
@@ -69,7 +75,7 @@ export default function AdminScanPage() {
             {result.success && !!result.data && (
               <div className="mb-6 p-4 bg-muted rounded-lg text-left text-sm space-y-1">
                 <p><strong>Employee:</strong> {(result.data as { employee: { full_name: string } }).employee.full_name}</p>
-                <p><strong>Time:</strong> {new Date().toLocaleTimeString()}</p>
+                <p><strong>Time:</strong> {mounted ? format(new Date(), "HH:mm:ss") : "--:--:--"}</p>
                 <p><strong>Status:</strong> {(result.data as { status: string }).status}</p>
               </div>
             )}

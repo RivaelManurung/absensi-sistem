@@ -26,6 +26,7 @@ import {
 import { useEmployees } from "@/features/employees/hooks/use-employees";
 import { useOffices } from "@/features/offices/hooks/use-offices";
 import { useReports } from "@/features/reports/hooks/use-reports";
+import { format } from "date-fns";
 
 function statusVariant(status: string) {
   if (status === "late") return "secondary";
@@ -237,7 +238,7 @@ export default function ReportsPage() {
                   <SelectItem value="all">All Employees</SelectItem>
                   {employees?.items.map((employee) => (
                     <SelectItem key={employee.id} value={employee.id}>
-                      {employee.name}
+                      {employee.full_name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -284,7 +285,7 @@ export default function ReportsPage() {
                     </TableCell>
                     <TableCell>{row.office_name}</TableCell>
                     <TableCell>{row.shift_name}</TableCell>
-                    <TableCell>{new Date(row.date).toLocaleDateString()}</TableCell>
+                    <TableCell>{format(new Date(row.date), "dd/MM/yyyy")}</TableCell>
                     <TableCell>{row.check_in ?? "-"}</TableCell>
                     <TableCell>{row.check_out ?? "-"}</TableCell>
                     <TableCell>

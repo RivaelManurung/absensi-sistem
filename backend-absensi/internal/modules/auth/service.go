@@ -27,6 +27,7 @@ type Service interface {
 	Login(req LoginRequest) (*LoginResponse, error)
 	RefreshToken(tokenStr string) (*LoginResponse, error)
 	Logout(userID string) error
+	GetMe(userID string) (*LoginResponse, error)
 }
 
 type service struct {
@@ -123,6 +124,17 @@ func (s *service) RefreshToken(tokenStr string) (*LoginResponse, error) {
 	}
 
 	return nil, errors.New("invalid refresh token")
+}
+
+func (s *service) GetMe(userID string) (*LoginResponse, error) {
+	user, err := s.repo.FindByID(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &LoginResponse{
+		User: *user,
+	}, nil
 }
 
 func (s *service) Logout(userID string) error {

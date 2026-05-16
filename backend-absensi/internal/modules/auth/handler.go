@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"backend-absensi/internal/models"
 	"backend-absensi/internal/modules/rbac"
 	"backend-absensi/internal/pkg/response"
 	"net/http"
@@ -41,20 +40,31 @@ func (h *Handler) Login(c *gin.Context) {
 }
 
 func (h *Handler) Me(c *gin.Context) {
-	// Middleware will set the user claims
-	userID, _ := c.Get("user_id")
-	email, _ := c.Get("email")
-	role, _ := c.Get("role")
+	userID, ok := c.Get("user_id")
+	if !ok {
+		response.Error(c, http.StatusUnauthorized, "Unauthorized", nil)
+		return
+	}
 
-	userRole := models.UserRole(role.(string))
-	permissions := h.rbacSvc.GetRolePermissions(userRole)
+	res, err := h.svc.GetMe(userID.(string))
+	if err != nil {
+		response.Error(c, http.StatusNotFound, "User not found", err.Error())
+		return
+	}
 
-	response.Success(c, http.StatusOK, "Success", gin.H{
-		"id":          userID,
-		"email":       email,
-		"role":        role,
-		"permissions": permissions,
-	})
+	res.Permissions = h.rbacSvc.GetRolePermissions(res.User.Role)
+
+	// Return user data with permissions merged in
+	returnResponse := gin.H{
+		"id":          res.User.ID,
+		"name":        res.User.Name,
+		"email":       res.User.Email,
+		"role":        res.User.Role,
+		"is_active":   res.User.IsActive,
+		"permissions": res.Permissions,
+	}
+
+	response.Success(c, http.StatusOK, "Success", returnResponse)
 }
 
 func (h *Handler) Refresh(c *gin.Context) {

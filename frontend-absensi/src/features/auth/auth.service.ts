@@ -10,8 +10,9 @@ export interface User {
   employee_id: string;
   name: string;
   email: string;
-  role: 'admin' | 'hr' | 'employee';
+  role: 'super_admin' | 'admin' | 'hr' | 'manager' | 'security' | 'employee';
   office_id: string;
+  permissions?: string[];
 }
 
 export interface LoginResponse {
@@ -21,13 +22,14 @@ export interface LoginResponse {
     access_token: string;
     refresh_token: string;
     user: User;
+    permissions: string[];
   };
 }
 
 export interface MeResponse {
   success: boolean;
   message: string;
-  data: Partial<User>;
+  data: User;
 }
 
 export type RefreshResponse = LoginResponse;

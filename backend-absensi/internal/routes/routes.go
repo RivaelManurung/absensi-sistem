@@ -89,7 +89,7 @@ func SetupRoutes(r *gin.Engine, db *gorm.DB, cfg *config.Config) {
 				appGroup.GET("/me", empHandler.GetMe)
 				appGroup.PUT("/profile", empHandler.UpdateProfile)
 				appGroup.GET("/office", empHandler.GetMyOffice)
-				appGroup.GET("/me/qr", rbac.Middleware(rbacSvc, rbac.PermissionEmployeesQRView), qrHandler.GetMyQR)
+				appGroup.GET("/me/qr", rbac.Middleware(rbacSvc, rbac.PermissionEmployeesQRRead), qrHandler.GetMyQR)
 				appGroup.POST("/attendance/qr/check-in", rbac.Middleware(rbacSvc, rbac.PermissionAttendanceSelfCheckIn), qrAttHandler.QRCheckIn)
 				appGroup.POST("/attendance/qr/check-out", rbac.Middleware(rbacSvc, rbac.PermissionAttendanceSelfCheckOut), qrAttHandler.QRCheckOut)
 			}
@@ -103,36 +103,42 @@ func SetupRoutes(r *gin.Engine, db *gorm.DB, cfg *config.Config) {
 
 			// Admin Routes
 			admin := protected.Group("/admin")
-			admin.Use(middleware.RoleMiddleware("admin", "hr"))
 			{
-				admin.GET("/attendance/report", attHandler.GetReport)
+				admin.GET("/attendance/report", rbac.Middleware(rbacSvc, rbac.PermissionAttendanceAdminReport), attHandler.GetReport)
 
-				// QR Management (Admin/HR)
-				admin.GET("/employees/:id/qr", rbac.Middleware(rbacSvc, rbac.PermissionEmployeesQRView), qrHandler.GetEmployeeQR)
+				// QR Management (Admin/HR/Security)
+				admin.GET("/employees/:id/qr", rbac.Middleware(rbacSvc, rbac.PermissionEmployeesQRRead), qrHandler.GetEmployeeQR)
 				admin.POST("/employees/:id/qr/regenerate", rbac.Middleware(rbacSvc, rbac.PermissionEmployeesQRRegen), qrHandler.RegenerateEmployeeQR)
 				admin.POST("/offices/:officeId/qr-sessions", rbac.Middleware(rbacSvc, rbac.PermissionQROfficeGenerate), qrHandler.GenerateOfficeQRSession)
 				admin.POST("/attendance/qr/scan-employee", rbac.Middleware(rbacSvc, rbac.PermissionAttendanceAdminScan), qrAttHandler.ScanEmployeeQR)
 
 				// Employee Management
-				admin.GET("/employees", empHandler.GetAll)
-				admin.POST("/employees", empHandler.Create)
-				admin.GET("/employees/:id", empHandler.GetByID)
-				admin.PUT("/employees/:id", empHandler.Update)
-				admin.DELETE("/employees/:id", empHandler.Delete)
+				admin.GET("/employees", rbac.Middleware(rbacSvc, rbac.PermissionEmployeesRead), empHandler.GetAll)
+				admin.POST("/employees", rbac.Middleware(rbacSvc, rbac.PermissionEmployeesCreate), empHandler.Create)
+				admin.GET("/employees/:id", rbac.Middleware(rbacSvc, rbac.PermissionEmployeesRead), empHandler.GetByID)
+				admin.PUT("/employees/:id", rbac.Middleware(rbacSvc, rbac.PermissionEmployeesUpdate), empHandler.Update)
+				admin.DELETE("/employees/:id", rbac.Middleware(rbacSvc, rbac.PermissionEmployeesDelete), empHandler.Delete)
 
 				// Office Management
-				admin.GET("/offices", offHandler.GetAll)
-				admin.POST("/offices", offHandler.Create)
-				admin.GET("/offices/:officeId", offHandler.GetByID)
-				admin.PUT("/offices/:officeId", offHandler.Update)
-				admin.DELETE("/offices/:officeId", offHandler.Delete)
+				admin.GET("/offices", rbac.Middleware(rbacSvc, rbac.PermissionOfficesRead), offHandler.GetAll)
+				admin.POST("/offices", rbac.Middleware(rbacSvc, rbac.PermissionOfficesCreate), offHandler.Create)
+				admin.GET("/offices/:officeId", rbac.Middleware(rbacSvc, rbac.PermissionOfficesRead), offHandler.GetByID)
+				admin.PUT("/offices/:officeId", rbac.Middleware(rbacSvc, rbac.PermissionOfficesUpdate), offHandler.Update)
+				admin.DELETE("/offices/:officeId", rbac.Middleware(rbacSvc, rbac.PermissionOfficesDelete), offHandler.Delete)
+
+				// Role & Permission Management
+				rbacHandler := rbac.NewHandler(db, rbacSvc)
+				admin.GET("/roles", rbac.Middleware(rbacSvc, rbac.PermissionRolesRead), rbacHandler.ListRoles)
+				admin.GET("/roles/:id", rbac.Middleware(rbacSvc, rbac.PermissionRolesRead), rbacHandler.GetRole)
+				admin.GET("/permissions", rbac.Middleware(rbacSvc, rbac.PermissionPermissionsRead), rbacHandler.ListPermissions)
+				admin.PUT("/roles/:id/permissions", rbac.Middleware(rbacSvc, rbac.PermissionPermissionsAssign), rbacHandler.SyncPermissions)
 
 				// Shift Management
-				admin.GET("/shifts", shfHandler.GetAll)
-				admin.POST("/shifts", shfHandler.Create)
-				admin.GET("/shifts/:id", shfHandler.GetByID)
-				admin.PUT("/shifts/:id", shfHandler.Update)
-				admin.DELETE("/shifts/:id", shfHandler.Delete)
+				admin.GET("/shifts", rbac.Middleware(rbacSvc, rbac.PermissionShiftsRead), shfHandler.GetAll)
+				admin.POST("/shifts", rbac.Middleware(rbacSvc, rbac.PermissionShiftsCreate), shfHandler.Create)
+				admin.GET("/shifts/:id", rbac.Middleware(rbacSvc, rbac.PermissionShiftsRead), shfHandler.GetByID)
+				admin.PUT("/shifts/:id", rbac.Middleware(rbacSvc, rbac.PermissionShiftsUpdate), shfHandler.Update)
+				admin.DELETE("/shifts/:id", rbac.Middleware(rbacSvc, rbac.PermissionShiftsDelete), shfHandler.Delete)
 			}
 		}
 	}

@@ -19,6 +19,8 @@ import { useEmployees } from "@/features/employees/hooks/use-employees";
 import { useOffices } from "@/features/offices/hooks/use-offices";
 import { useReports } from "@/features/reports/hooks/use-reports";
 import { useShifts } from "@/features/shifts/hooks/use-shifts";
+import { useEffect, useState } from "react";
+import { format } from "date-fns";
 
 function statusVariant(status: string) {
   if (status === "late") return "secondary";
@@ -27,8 +29,16 @@ function statusVariant(status: string) {
   return "default";
 }
 
+import { PermissionGuard } from "@/components/shared/permission-guard";
+import { Can } from "@/components/shared/can";
+
 export default function DashboardPage() {
+  const [mounted, setMounted] = useState(false);
   const today = new Date().toISOString().split("T")[0];
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   const { data: employees, isLoading: isLoadingEmployees } = useEmployees({ limit: 1 });
   const { data: offices = [], isLoading: isLoadingOffices } = useOffices({ limit: 100 });
   const { data: shifts = [], isLoading: isLoadingShifts } = useShifts({ limit: 100 });
@@ -84,95 +94,101 @@ export default function DashboardPage() {
   const rows = report?.items ?? [];
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
-          <p className="text-sm text-muted-foreground">
-            Live overview from backend employees, offices, shifts, and attendance report.
-          </p>
+    <PermissionGuard permission="dashboard.read">
+      <div className="space-y-6">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
+            <p className="text-sm text-muted-foreground">
+              Live overview from backend employees, offices, shifts, and attendance report.
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Can permission="report.read">
+              <Link href="/admin/reports" className={buttonVariants({ variant: "outline", size: "sm" })}>
+                  <FileText className="mr-2 size-4" />
+                  Reports
+              </Link>
+            </Can>
+            <Can permission="employee.create">
+              <Link href="/admin/employees/create" className={buttonVariants({ size: "sm" })}>
+                Add Employee
+              </Link>
+            </Can>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Link href="/admin/reports" className={buttonVariants({ variant: "outline", size: "sm" })}>
-              <FileText className="mr-2 size-4" />
-              Reports
-          </Link>
-          <Link href="/admin/employees/create" className={buttonVariants({ size: "sm" })}>
-            Add Employee
-          </Link>
+
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+          {stats.map((stat) => (
+            <Card key={stat.title}>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
+                <stat.icon className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                {isLoadingStats ? (
+                  <Skeleton className="h-8 w-20" />
+                ) : (
+                  <div className="text-2xl font-bold">{stat.value}</div>
+                )}
+                <p className="pt-1 text-xs text-muted-foreground">{stat.description}</p>
+              </CardContent>
+            </Card>
+          ))}
         </div>
-      </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
-        {stats.map((stat) => (
-          <Card key={stat.title}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
-              <stat.icon className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              {isLoadingStats ? (
-                <Skeleton className="h-8 w-20" />
-              ) : (
-                <div className="text-2xl font-bold">{stat.value}</div>
-              )}
-              <p className="pt-1 text-xs text-muted-foreground">{stat.description}</p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Today&apos;s Attendance</CardTitle>
-          <CardDescription>
-            Latest attendance records for {new Date(today).toLocaleDateString()}.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {isLoadingReport ? (
-            <div className="space-y-3">
-              <Skeleton className="h-10 w-full" />
-              <Skeleton className="h-10 w-full" />
-              <Skeleton className="h-10 w-full" />
-            </div>
-          ) : rows.length === 0 ? (
-            <div className="rounded-lg border border-dashed py-12 text-center text-sm text-muted-foreground">
-              No attendance records for today.
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Employee</TableHead>
-                  <TableHead>Office</TableHead>
-                  <TableHead>Check In</TableHead>
-                  <TableHead>Check Out</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Late</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {rows.map((row) => (
-                  <TableRow key={row.id}>
-                    <TableCell>
-                      <div className="font-medium">{row.employee_name}</div>
-                      <div className="text-xs text-muted-foreground">{row.employee_code}</div>
-                    </TableCell>
-                    <TableCell>{row.office_name}</TableCell>
-                    <TableCell>{row.check_in ?? "-"}</TableCell>
-                    <TableCell>{row.check_out ?? "-"}</TableCell>
-                    <TableCell>
-                      <Badge variant={statusVariant(row.status)}>{row.status.replace("_", " ")}</Badge>
-                    </TableCell>
-                    <TableCell className="text-right">{row.late_minutes}m</TableCell>
+        <Card>
+          <CardHeader>
+            <CardTitle>Today&apos;s Attendance</CardTitle>
+            <CardDescription>
+              Latest attendance records for {mounted ? format(new Date(today), "dd/MM/yyyy") : "--/--/----"}.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {isLoadingReport ? (
+              <div className="space-y-3">
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+            ) : rows.length === 0 ? (
+              <div className="rounded-lg border border-dashed py-12 text-center text-sm text-muted-foreground">
+                No attendance records for today.
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Employee</TableHead>
+                    <TableHead>Office</TableHead>
+                    <TableHead>Check In</TableHead>
+                    <TableHead>Check Out</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Late</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+                </TableHeader>
+                <TableBody>
+                  {rows.map((row) => (
+                    <TableRow key={row.id}>
+                      <TableCell>
+                        <div className="font-medium">{row.employee_name}</div>
+                        <div className="text-xs text-muted-foreground">{row.employee_code}</div>
+                      </TableCell>
+                      <TableCell>{row.office_name}</TableCell>
+                      <TableCell>{row.check_in ?? "-"}</TableCell>
+                      <TableCell>{row.check_out ?? "-"}</TableCell>
+                      <TableCell>
+                        <Badge variant={statusVariant(row.status)}>{row.status.replace("_", " ")}</Badge>
+                      </TableCell>
+                      <TableCell className="text-right">{row.late_minutes}m</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </PermissionGuard>
   );
 }

@@ -6,37 +6,37 @@ const (
 	PermissionAuthLogout = "auth.logout"
 
 	// Dashboard
-	PermissionDashboardView = "dashboard.view"
+	PermissionDashboardRead = "dashboard.read"
 
 	// Employees
-	PermissionEmployeesView       = "employees.view"
-	PermissionEmployeesCreate     = "employees.create"
-	PermissionEmployeesUpdate     = "employees.update"
-	PermissionEmployeesDelete     = "employees.delete"
-	PermissionEmployeesQRView     = "employees.qr.view"
-	PermissionEmployeesQRRegen    = "employees.qr.regenerate"
-	PermissionEmployeesQRRevoke   = "employees.qr.revoke"
+	PermissionEmployeesRead      = "employee.read"
+	PermissionEmployeesCreate    = "employee.create"
+	PermissionEmployeesUpdate    = "employee.update"
+	PermissionEmployeesDelete    = "employee.delete"
+	PermissionEmployeesQRRead    = "employee.qr.read"
+	PermissionEmployeesQRRegen   = "employee.qr.regenerate"
+	PermissionEmployeesQRRevoke  = "employee.qr.revoke"
 
 	// Offices
-	PermissionOfficesView   = "offices.view"
-	PermissionOfficesCreate = "offices.create"
-	PermissionOfficesUpdate = "offices.update"
-	PermissionOfficesDelete = "offices.delete"
+	PermissionOfficesRead   = "office.read"
+	PermissionOfficesCreate = "office.create"
+	PermissionOfficesUpdate = "office.update"
+	PermissionOfficesDelete = "office.delete"
 
 	// Shifts
-	PermissionShiftsView   = "shifts.view"
-	PermissionShiftsCreate = "shifts.create"
-	PermissionShiftsUpdate = "shifts.update"
-	PermissionShiftsDelete = "shifts.delete"
+	PermissionShiftsRead   = "shift.read"
+	PermissionShiftsCreate = "shift.create"
+	PermissionShiftsUpdate = "shift.update"
+	PermissionShiftsDelete = "shift.delete"
 
 	// Attendance Self
-	PermissionAttendanceSelfView     = "attendance.self.view"
+	PermissionAttendanceSelfRead     = "attendance.self.read"
 	PermissionAttendanceSelfCheckIn  = "attendance.self.check_in"
 	PermissionAttendanceSelfCheckOut = "attendance.self.check_out"
-	PermissionAttendanceHistoryView  = "attendance.history.view"
+	PermissionAttendanceHistoryRead  = "attendance.history.read"
 
 	// Attendance Admin
-	PermissionAttendanceAdminView     = "attendance.admin.view"
+	PermissionAttendanceAdminRead     = "attendance.admin.read"
 	PermissionAttendanceAdminScan     = "attendance.admin.scan_employee_qr"
 	PermissionAttendanceAdminOverride = "attendance.admin.override"
 	PermissionAttendanceAdminReport   = "attendance.admin.report"
@@ -44,13 +44,30 @@ const (
 	// QR Office
 	PermissionQROfficeGenerate = "qr.office.generate"
 	PermissionQROfficeRevoke   = "qr.office.revoke"
-	PermissionQROfficeView     = "qr.office.view"
+	PermissionQROfficeRead     = "qr.office.read"
 
 	// Reports
-	PermissionReportsView   = "reports.view"
-	PermissionReportsExport = "reports.export"
+	PermissionReportsRead   = "report.read"
+	PermissionReportsExport = "report.export"
 
 	// Settings
-	PermissionSettingsView   = "settings.view"
-	PermissionSettingsUpdate = "settings.update"
+	PermissionSettingsRead   = "setting.read"
+	PermissionSettingsUpdate = "setting.update"
+	PermissionSettingsManage = "setting.manage"
+
+	// Users
+	PermissionUsersRead   = "user.read"
+	PermissionUsersCreate = "user.create"
+	PermissionUsersUpdate = "user.update"
+	PermissionUsersDelete = "user.delete"
+
+	// Roles
+	PermissionRolesRead   = "role.read"
+	PermissionRolesCreate = "role.create"
+	PermissionRolesUpdate = "role.update"
+	PermissionRolesDelete = "role.delete"
+
+	// Permissions
+	PermissionPermissionsRead   = "permission.read"
+	PermissionPermissionsAssign = "permission.assign"
 )

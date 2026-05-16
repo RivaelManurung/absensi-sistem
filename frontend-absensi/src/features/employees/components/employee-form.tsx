@@ -24,6 +24,7 @@ import {
 import { Employee } from "../types/employee.type";
 import { useEffect } from "react";
 import { Loader2, User, Briefcase, Shield, Info, Phone, Calendar, MapPin, Mail, Lock } from "lucide-react";
+import { PasswordInput } from "@/components/ui/password-input";
 import { useOffices } from "@/features/offices/hooks/use-offices";
 import { useShifts } from "@/features/shifts/hooks/use-shifts";
 import { Textarea } from "@/components/ui/textarea";
@@ -505,10 +506,13 @@ export function EmployeeForm({ initialData, onSubmit, isLoading }: EmployeeFormP
                 <FormItem>
                   <FormLabel>{initialData ? "Change Password" : "Account Password *"}</FormLabel>
                   <FormControl>
-                    <div className="relative">
-                        <Lock className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
-                        <Input type="password" placeholder="••••••••" className="rounded-xl h-11 pl-10" {...field} />
-                    </div>
+                    <PasswordInput 
+                      placeholder="••••••••" 
+                      className="rounded-xl h-11" 
+                      leftIcon={<Lock className="h-5 w-5" />}
+                      autoComplete={initialData ? "new-password" : "current-password"}
+                      {...field} 
+                    />
                   </FormControl>
                   {initialData && <FormDescription>Leave empty to keep current password.</FormDescription>}
                   <FormMessage />
@@ -522,10 +526,13 @@ export function EmployeeForm({ initialData, onSubmit, isLoading }: EmployeeFormP
                 <FormItem>
                   <FormLabel>Confirm Password</FormLabel>
                   <FormControl>
-                    <div className="relative">
-                        <Lock className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
-                        <Input type="password" placeholder="••••••••" className="rounded-xl h-11 pl-10" {...field} />
-                    </div>
+                    <PasswordInput 
+                      placeholder="••••••••" 
+                      className="rounded-xl h-11" 
+                      leftIcon={<Lock className="h-5 w-5" />}
+                      autoComplete={initialData ? "new-password" : "current-password"}
+                      {...field} 
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

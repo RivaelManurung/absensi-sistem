@@ -16,6 +16,7 @@ import {
 import { useAttendanceHistory } from "@/features/attendance/hooks/use-attendance-history";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
+import { format } from "date-fns";
 
 export default function AttendanceHistoryPage() {
   const [search, setSearch] = useState("");
@@ -119,7 +120,7 @@ export default function AttendanceHistoryPage() {
                   records.map((record) => (
                     <TableRow key={record.id}>
                       <TableCell className="font-medium">
-                        {new Date(record.date).toLocaleDateString()}
+                        {format(new Date(record.date), "dd/MM/yyyy")}
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-col">

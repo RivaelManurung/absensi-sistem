@@ -37,7 +37,9 @@ export function OfficeDetailCard({ office }: OfficeDetailCardProps) {
             <Navigation className="size-4 text-muted-foreground" />
             <div className="space-y-0.5">
               <p className="text-[10px] font-bold uppercase text-muted-foreground">Coordinates</p>
-              <p className="text-sm font-mono">{office.latitude.toFixed(6)}, {office.longitude.toFixed(6)}</p>
+              <p className="text-sm font-mono">
+                {office.latitude ? office.latitude.toFixed(6) : "N/A"}, {office.longitude ? office.longitude.toFixed(6) : "N/A"}
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -64,7 +66,7 @@ export function OfficeDetailCard({ office }: OfficeDetailCardProps) {
             <div className="text-center p-6">
               <MapPin className="size-8 text-muted-foreground/40 mx-auto mb-2" />
               <p className="text-sm text-muted-foreground">Map visualization for geofence (Radius: {office.radius_meter}m)</p>
-              <p className="text-xs text-muted-foreground/60 mt-1">Latitude: {office.latitude} | Longitude: {office.longitude}</p>
+              <p className="text-xs text-muted-foreground/60 mt-1">Latitude: {office.latitude ?? "N/A"} | Longitude: {office.longitude ?? "N/A"}</p>
             </div>
           </div>
         </div>

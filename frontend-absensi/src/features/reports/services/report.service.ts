@@ -48,12 +48,11 @@ export type ReportQueryParams = {
   office_id?: string;
 };
 
+import { format } from "date-fns";
+
 function formatDateTime(value: string | null) {
   if (!value) return null;
-  return new Date(value).toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  return format(new Date(value), "HH:mm");
 }
 
 function mapRow(row: BackendAttendance): AttendanceReportRow {
